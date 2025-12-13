@@ -66,7 +66,7 @@ export default function DragWindowRegion({ title }: DragWindowRegionProps) {
                   onClick={() => setMenuOpen(false)}
                 >
                   <Video size={16} />
-                  {t("videoConverter")}
+                  {t("batchConverter")}
                 </Link>
               </div>
             </>
