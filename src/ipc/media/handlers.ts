@@ -2,7 +2,7 @@ import { os } from "@orpc/server";
 import { convertVideoSchema } from "./schemas";
 import ffmpegPath from "ffmpeg-static";
 import ffprobePath from "ffprobe-static";
-import { execa } from "execa";
+import execa from "execa";
 import * as path from "path";
 import { ipcContext } from "@/ipc/context";
 
@@ -83,8 +83,8 @@ export const convertVideo = os
       // Success
       mainWindow.webContents.send("ffmpeg-progress", 100);
       return { success: true, outputPath };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Conversion failed:", error);
-      throw new Error(`Conversion failed: ${error.message}`);
+      throw new Error(`Conversion failed: ${(error as Error).message}`);
     }
   });

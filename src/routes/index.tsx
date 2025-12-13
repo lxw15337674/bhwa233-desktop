@@ -1,5 +1,4 @@
 import ToggleTheme from "@/components/toggle-theme";
-import { useTranslation } from "react-i18next";
 import LangToggle from "@/components/lang-toggle";
 import { createFileRoute } from "@tanstack/react-router";
 import NavigationMenu from "@/components/navigation-menu";
@@ -14,8 +13,6 @@ function HomePage() {
   const [status, setStatus] = useState<"idle" | "converting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [output, setOutput] = useState("");
-
-  const { t } = useTranslation();
 
   useEffect(() => {
     const unsubscribe = window.media.onProgress((p) => {
@@ -40,15 +37,15 @@ function HomePage() {
     setErrorMsg("");
     try {
       // Electron exposes the full path property on File objects
-      const path = (file as any).path;
+      const path = window.electron.getFilePath(file);
       const result = await convertVideo(path, format);
       if (result.success) {
         setStatus("success");
         setOutput(result.outputPath);
       }
-    } catch (e: any) {
+    } catch (e: unknown) {
       setStatus("error");
-      setErrorMsg(e.message || "Unknown error");
+      setErrorMsg((e as Error).message || "Unknown error");
     } finally {
       if (status !== "success") {
          // Should we reset status? Maybe keep it as error or success
