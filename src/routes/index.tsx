@@ -2,59 +2,142 @@ import ToggleTheme from "@/components/toggle-theme";
 import { useTranslation } from "react-i18next";
 import LangToggle from "@/components/lang-toggle";
 import { createFileRoute } from "@tanstack/react-router";
-import { SiElectron, SiReact, SiVite } from "@icons-pack/react-simple-icons";
 import NavigationMenu from "@/components/navigation-menu";
-import { getAppVersion } from "@/actions/app";
-import { useEffect, useState, useTransition } from "react";
-import ExternalLink from "@/components/external-link";
-
-/*
- * Update this page to modify your home page.
- * You can delete this file component to start from a blank page.
- */
+import { useEffect, useState } from "react";
+import { convertVideo } from "@/actions/media";
+import { Button } from "@/components/ui/button";
 
 function HomePage() {
-  const iconSize = 48;
+  const [file, setFile] = useState<File | null>(null);
+  const [format, setFormat] = useState("mp4");
+  const [progress, setProgress] = useState(0);
+  const [status, setStatus] = useState<"idle" | "converting" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+  const [output, setOutput] = useState("");
 
-  const [appVersion, setAppVersion] = useState("0.0.0");
-  const [, startGetAppVersion] = useTransition();
   const { t } = useTranslation();
 
-  useEffect(
-    () => startGetAppVersion(() => getAppVersion().then(setAppVersion)),
-    [],
-  );
+  useEffect(() => {
+    const unsubscribe = window.media.onProgress((p) => {
+      setProgress(p);
+    });
+    return unsubscribe;
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+      setStatus("idle");
+      setProgress(0);
+      setOutput("");
+    }
+  };
+
+  const handleConvert = async () => {
+    if (!file) return;
+    setStatus("converting");
+    setProgress(0);
+    setErrorMsg("");
+    try {
+      // Electron exposes the full path property on File objects
+      const path = (file as any).path;
+      const result = await convertVideo(path, format);
+      if (result.success) {
+        setStatus("success");
+        setOutput(result.outputPath);
+      }
+    } catch (e: any) {
+      setStatus("error");
+      setErrorMsg(e.message || "Unknown error");
+    } finally {
+      if (status !== "success") {
+         // Should we reset status? Maybe keep it as error or success
+      }
+    }
+  };
 
   return (
     <>
       <NavigationMenu />
       <div className="flex h-full flex-col">
-        <div className="flex flex-1 flex-col items-center justify-center gap-2">
-          <div className="inline-flex gap-2">
-            <SiReact size={iconSize} />
-            <SiVite size={iconSize} />
-            <SiElectron size={iconSize} />
+        <div className="flex flex-1 flex-col items-center justify-center gap-8 p-8">
+          <div className="text-center">
+            <h1 className="font-mono text-4xl font-bold">Video Converter</h1>
+            <p className="text-muted-foreground mt-2">Convert your videos to different formats</p>
           </div>
-          <span>
-            <h1 className="font-mono text-4xl font-bold">{t("appName")}</h1>
-            <p
-              className="text-muted-foreground text-end text-sm uppercase"
-              data-testid="pageTitle"
+
+          <div className="w-full max-w-md space-y-4 rounded-lg border p-6 shadow-sm">
+            <div className="grid w-full items-center gap-1.5">
+              <label htmlFor="video" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">Video File</label>
+              <input
+                id="video"
+                type="file"
+                accept="video/*"
+                onChange={handleFileChange}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+
+            <div className="grid w-full items-center gap-1.5">
+               <label htmlFor="format" className="text-sm font-medium leading-none">Output Format</label>
+               <select
+                id="format"
+                value={format}
+                onChange={(e) => setFormat(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+               >
+                 <option value="mp4">MP4</option>
+                 <option value="webm">WebM</option>
+                 <option value="avi">AVI</option>
+                 <option value="mov">MOV</option>
+                 <option value="gif">GIF</option>
+                 <option value="mp3">MP3 (Audio)</option>
+               </select>
+            </div>
+
+            <Button 
+              onClick={handleConvert} 
+              disabled={!file || status === "converting"} 
+              className="w-full"
             >
-              {t("titleHomePage")}
-            </p>
-          </span>
-          <LangToggle />
-          <ToggleTheme />
+              {status === "converting" ? "Converting..." : "Convert Video"}
+            </Button>
+
+            {status === "converting" && (
+              <div className="space-y-1">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Progress</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                  <div 
+                    className="h-full bg-primary transition-all duration-300 ease-in-out" 
+                    style={{ width: `${progress}%` }} 
+                  />
+                </div>
+              </div>
+            )}
+
+            {status === "success" && (
+              <div className="rounded-md bg-green-500/10 p-4 text-sm text-green-500">
+                <p className="font-bold">Conversion Complete!</p>
+                <p className="mt-1 text-xs break-all">Saved to: {output}</p>
+              </div>
+            )}
+
+            {status === "error" && (
+               <div className="rounded-md bg-red-500/10 p-4 text-sm text-red-500">
+                <p className="font-bold">Error</p>
+                <p className="mt-1 text-xs">{errorMsg}</p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-4">
+             <LangToggle />
+             <ToggleTheme />
+          </div>
         </div>
-        <footer className="font-tomorrow text-muted-foreground flex justify-between text-[0.7rem] uppercase">
-          <ExternalLink href="https://github.com/LuanRoger">
-            {t("madeBy")}
-          </ExternalLink>
-          <p>
-            {t("version")}: v{appVersion}
-          </p>
-        </footer>
       </div>
     </>
   );

@@ -2,3 +2,4 @@ onlyBuiltDependencies:
   - electron
   - electron-winstaller
   - esbuild
+  - ffmpeg-static

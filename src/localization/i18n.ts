@@ -12,6 +12,7 @@ i18n.use(initReactI18next).init({
         documentation: "Documentation",
         version: "Version",
         madeBy: "Made by LuanRoger",
+        selectLanguage: "Select a language",
       },
     },
     "pt-BR": {
@@ -22,6 +23,7 @@ i18n.use(initReactI18next).init({
         documentation: "Documentação",
         version: "Versão",
         madeBy: "Feito por LuanRoger",
+        selectLanguage: "Selecione um idioma",
       },
     },
   },
