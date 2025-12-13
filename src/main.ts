@@ -8,8 +8,10 @@ import { ipcMain } from "electron/main";
 import { ipcContext } from "@/ipc/context";
 import { IPC_CHANNELS } from "./constants";
 import { updateElectronApp, UpdateSourceType } from "update-electron-app";
+import { createTray, destroyTray } from "./tray";
 
 const inDevelopment = process.env.NODE_ENV === "development";
+let isQuitting = false;
 
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
@@ -29,6 +31,17 @@ function createWindow() {
       process.platform === "darwin" ? { x: 5, y: 5 } : undefined,
   });
   ipcContext.setMainWindow(mainWindow);
+
+  // Minimize to tray instead of closing
+  mainWindow.on("close", (event) => {
+    if (!isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
+
+  // Create system tray
+  createTray(mainWindow);
 
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
@@ -74,6 +87,12 @@ app
   .then(installExtensions)
   .then(checkForUpdates)
   .then(setupORPC);
+
+// Set isQuitting flag before quit
+app.on("before-quit", () => {
+  isQuitting = true;
+  destroyTray();
+});
 
 //osX only
 app.on("window-all-closed", () => {

@@ -1,6 +1,10 @@
 import { getPlatform } from "@/actions/app";
 import { closeWindow, maximizeWindow, minimizeWindow } from "@/actions/window";
 import { type ReactNode, useEffect, useState } from "react";
+import { Settings, ChevronDown, Video } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
+import { Button } from "./ui/button";
 
 interface DragWindowRegionProps {
   title?: ReactNode;
@@ -8,6 +12,8 @@ interface DragWindowRegionProps {
 
 export default function DragWindowRegion({ title }: DragWindowRegionProps) {
   const [platform, setPlatform] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     let active = true;
@@ -33,19 +39,50 @@ export default function DragWindowRegion({ title }: DragWindowRegionProps) {
 
   return (
     <div className="flex w-screen items-stretch justify-between">
-      <div className="draglayer w-full">
-        {title && !isMacOS && (
-          <div className="flex flex-1 p-2 text-xs whitespace-nowrap text-gray-400 select-none">
-            {title}
-          </div>
-        )}
-        {isMacOS && (
-          <div className="flex flex-1 p-2">
-            {/* Maintain the same height but do not display content */}
-          </div>
-        )}
+      <div className="draglayer flex w-full items-center">
+        {isMacOS && <div className="w-16" />}
+        {/* App Title */}
+        <div className="flex items-center gap-1 p-2 text-sm font-medium select-none">
+          {title}
+        </div>
+
+        {/* Function Menu Dropdown */}
+        <div className="relative" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+          <button
+            type="button"
+            className="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm hover:bg-secondary"
+            onClick={() => setMenuOpen(!menuOpen)}
+          >
+            {t("functions")}
+            <ChevronDown size={14} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+          </button>
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+              <div className="absolute left-0 top-full z-50 mt-1 min-w-[160px] rounded-md border bg-background p-1 shadow-lg">
+                <Link
+                  to="/"
+                  className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-secondary"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <Video size={16} />
+                  {t("videoConverter")}
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
       </div>
-      {!isMacOS && <WindowButtons />}
+
+      {/* Right Section: Settings + Window Buttons */}
+      <div className="flex items-center">
+        <Button variant="ghost" size="icon" asChild className="h-8 w-8">
+          <Link to="/settings">
+            <Settings size={16} />
+          </Link>
+        </Button>
+        {!isMacOS && <WindowButtons />}
+      </div>
     </div>
   );
 }
@@ -56,7 +93,7 @@ function WindowButtons() {
       <button
         title="Minimize"
         type="button"
-        className="p-2 hover:bg-slate-300"
+        className="p-2 hover:bg-slate-300 dark:hover:bg-slate-700"
         onClick={minimizeWindow}
       >
         <svg
@@ -72,7 +109,7 @@ function WindowButtons() {
       <button
         title="Maximize"
         type="button"
-        className="p-2 hover:bg-slate-300"
+        className="p-2 hover:bg-slate-300 dark:hover:bg-slate-700"
         onClick={maximizeWindow}
       >
         <svg
@@ -95,7 +132,7 @@ function WindowButtons() {
       <button
         type="button"
         title="Close"
-        className="p-2 hover:bg-red-300"
+        className="p-2 hover:bg-red-300 dark:hover:bg-red-700"
         onClick={closeWindow}
       >
         <svg

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir /B \"C:\\own\\code\\bhwa233-desktop\")",
+      "Bash(*)",
+      "Bash(pnpm lint:*)",
+      "Bash(node scripts/copy-ffmpeg.js:*)",
+      "Bash(timeout 15 pnpm start:*)",
+      "Bash(node scripts/generate-tray-icon.js:*)",
+      "Bash(pnpm add:*)"
+    ]
+  }
+}

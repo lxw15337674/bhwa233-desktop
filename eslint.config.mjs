@@ -17,6 +17,9 @@ const prettierIgnorePath = path.resolve(__dirname, ".prettierignore");
 export default defineConfig([
   includeIgnoreFile(prettierIgnorePath),
   {
+    ignores: ["scripts/**"],
+  },
+  {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
   },
   { languageOptions: { globals: globals.browser } },

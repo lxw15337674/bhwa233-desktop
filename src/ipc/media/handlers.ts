@@ -1,19 +1,28 @@
 import { os } from "@orpc/server";
-import { convertVideoSchema } from "./schemas";
-import ffmpegPath from "ffmpeg-static";
-import ffprobePath from "ffprobe-static";
+import { convertVideoSchema, getVideoInfoSchema, VideoInfo } from "./schemas";
+import { app } from "electron";
 import execa from "execa";
 import * as path from "path";
+import * as fs from "fs";
 import { ipcContext } from "@/ipc/context";
 
-// Helper to handle ASAR paths
-const getBinaryPath = (binaryPath: string | null) => {
-  if (!binaryPath) return "";
-  return binaryPath.replace("app.asar", "app.asar.unpacked");
+// Get binary paths from resources directory
+const getBinaryPath = (binaryName: string): string => {
+  const isWindows = process.platform === "win32";
+  const ext = isWindows ? ".exe" : "";
+  const fileName = `${binaryName}${ext}`;
+
+  if (app.isPackaged) {
+    // Production: use process.resourcesPath
+    return path.join(process.resourcesPath, fileName);
+  } else {
+    // Development: use project root/resources
+    return path.join(process.cwd(), "resources", fileName);
+  }
 };
 
-const FFMPEG_BIN = getBinaryPath(ffmpegPath);
-const FFPROBE_BIN = getBinaryPath(ffprobePath?.path || "");
+const FFMPEG_BIN = getBinaryPath("ffmpeg");
+const FFPROBE_BIN = getBinaryPath("ffprobe");
 
 // Helper: Parse HH:MM:SS.ms to seconds
 const parseTime = (timeStr: string) => {
@@ -37,6 +46,54 @@ const getVideoDuration = async (inputPath: string): Promise<number> => {
   ]);
   return parseFloat(stdout.trim());
 };
+
+// Get detailed video info using ffprobe
+export const getVideoInfo = os
+  .input(getVideoInfoSchema)
+  .handler(async ({ input: { inputPath } }): Promise<VideoInfo> => {
+    const { stdout } = await execa(FFPROBE_BIN, [
+      "-v",
+      "error",
+      "-select_streams",
+      "v:0",
+      "-show_entries",
+      "stream=width,height,codec_name,r_frame_rate,bit_rate:format=duration,size,format_name,bit_rate",
+      "-of",
+      "json",
+      inputPath,
+    ]);
+
+    const probeData = JSON.parse(stdout);
+    const stream = probeData.streams?.[0] || {};
+    const format = probeData.format || {};
+
+    // Parse frame rate (e.g., "30/1" or "30000/1001")
+    let fps = 0;
+    if (stream.r_frame_rate) {
+      const [num, den] = stream.r_frame_rate.split("/").map(Number);
+      fps = den ? Math.round((num / den) * 100) / 100 : num;
+    }
+
+    // Get file size
+    let size = 0;
+    try {
+      const stats = fs.statSync(inputPath);
+      size = stats.size;
+    } catch {
+      size = parseInt(format.size) || 0;
+    }
+
+    return {
+      duration: parseFloat(format.duration) || 0,
+      width: stream.width || 0,
+      height: stream.height || 0,
+      codec: stream.codec_name || "unknown",
+      bitrate: parseInt(stream.bit_rate || format.bit_rate) || 0,
+      fps,
+      size,
+      format: format.format_name?.split(",")[0] || path.extname(inputPath).slice(1),
+    };
+  });
 
 export const convertVideo = os
   .input(convertVideoSchema)
