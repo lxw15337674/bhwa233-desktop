@@ -12,7 +12,8 @@
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add:*)",
       "Bash(node *)",
-      "Bash(pnpm start)"
+      "Bash(pnpm start)",
+      "WebSearch"
     ]
   }
 }
