@@ -11,7 +11,8 @@
       "Bash(pnpm add:*)",
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(pnpm start)"
     ]
   }
 }

@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { batchConvert, batchControl, getHardwareInfo, getVideoInfo, selectFolder } from "@/actions/media";
+import { openFolder, showItemInFolder } from "@/actions/shell";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTranslation } from "react-i18next";
 import type { BatchFileStatus, BatchOverallProgress, HardwareInfo, SpeedPreset, VideoCodec, VideoInfo } from "@/ipc/media/schemas";
-import { Trash2, X, Play, Pause, Square, CheckCircle, XCircle, Loader2, Clock, Monitor, Info, FolderOpen } from "lucide-react";
+import { Trash2, X, Play, Pause, Square, CheckCircle, XCircle, Loader2, Clock, Monitor, Info, FolderOpen, FolderSearch } from "lucide-react";
 import { Input } from "../components/ui/input";
 
 interface FileItem {
@@ -18,6 +19,7 @@ interface FileItem {
   progress: number;
   error?: string;
   outputSize?: number;
+  outputPath?: string;
 }
 
 const formatFileSize = (bytes: number): string => {
@@ -92,6 +94,7 @@ function HomePage() {
                   progress: progress.currentFile!.progress,
                   error: progress.currentFile!.error,
                   outputSize: progress.currentFile!.outputSize,
+                  outputPath: progress.currentFile!.outputPath,
                 }
               : f
           )
@@ -159,9 +162,45 @@ function HomePage() {
     setFiles((prev) => prev.filter((f) => f.id !== id));
   };
 
+  const handleOpenFolder = async (item: FileItem) => {
+    try {
+      if (item.outputPath) {
+        // If conversion completed, show output file in folder
+        await showItemInFolder(item.outputPath);
+      } else {
+        // Otherwise open source file directory
+        const dir = item.path.substring(0, item.path.lastIndexOf("\\") || item.path.lastIndexOf("/"));
+        await openFolder(dir);
+      }
+    } catch (error) {
+      console.error("Failed to open folder:", error);
+    }
+  };
+
+  const handleOpenOutputDir = async () => {
+    try {
+      if (outputDir) {
+        await openFolder(outputDir);
+      } else if (files.length > 0) {
+        // If no output dir set, open first file's directory
+        const firstFilePath = files[0].path;
+        const dir = firstFilePath.substring(0, firstFilePath.lastIndexOf("\\") || firstFilePath.lastIndexOf("/"));
+        await openFolder(dir);
+      }
+    } catch (error) {
+      console.error("Failed to open output directory:", error);
+    }
+  };
+
   const clearFiles = () => {
     setFiles([]);
     setStatus("idle");
+    setOverallProgress({ total: 0, completed: 0, failed: 0 });
+  };
+
+  const restartConversion = () => {
+    setStatus("idle");
+    setFiles((prev) => prev.map((f) => ({ ...f, status: "pending" as const, progress: 0, error: undefined })));
     setOverallProgress({ total: 0, completed: 0, failed: 0 });
   };
 
@@ -330,6 +369,15 @@ function HomePage() {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 shrink-0"
+                        onClick={() => handleOpenFolder(item)}
+                        title={t("openFolder")}
+                      >
+                        <FolderOpen size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
                         onClick={() => removeFile(item.id)}
                         disabled={status === "converting" && item.status === "converting"}
                       >
@@ -362,6 +410,16 @@ function HomePage() {
                     size="icon"
                     onClick={handleSelectFolder}
                     disabled={isDisabled}
+                    title={t("selectFolder")}
+                  >
+                    <FolderSearch size={16} />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleOpenOutputDir}
+                    disabled={!outputDir && files.length === 0}
+                    title={t("openOutputDir")}
                   >
                     <FolderOpen size={16} />
                   </Button>
@@ -370,7 +428,28 @@ function HomePage() {
 
               {/* Filename Template */}
               <div>
-                <label className="text-sm font-medium">{t("filenameTemplate")}</label>
+                <div className="flex items-center gap-1.5">
+                  <label className="text-sm font-medium">{t("filenameTemplate")}</label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info size={14} className="text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <div className="space-y-1 text-xs">
+                          <p className="font-semibold">{t("templateVariables")}</p>
+                          <div className="space-y-0.5">
+                            <p><code className="bg-secondary px-1 rounded">{"{name}"}</code> - {t("varName")}</p>
+                            <p><code className="bg-secondary px-1 rounded">{"{date}"}</code> - {t("varDate")}</p>
+                            <p><code className="bg-secondary px-1 rounded">{"{time}"}</code> - {t("varTime")}</p>
+                            <p><code className="bg-secondary px-1 rounded">{"{format}"}</code> - {t("varFormat")}</p>
+                          </div>
+                          <p className="pt-1 text-muted-foreground">{t("templateExample")}</p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Input
                   value={filenameTemplate}
                   onChange={(e) => setFilenameTemplate(e.target.value)}
@@ -445,33 +524,20 @@ function HomePage() {
                 </Select>
               </div>
 
-              {/* Parallel Count & Smart Copy */}
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-sm font-medium">{t("parallelCount")}</label>
-                  <Select value={parallelCount.toString()} onValueChange={(v) => setParallelCount(Number(v))} disabled={isDisabled}>
-                    <SelectTrigger className="mt-1.5 w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 ({t("serial")})</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
-                      <SelectItem value="3">3</SelectItem>
-                      <SelectItem value="4">4</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium">{t("smartCopy")}</label>
-                  <div className="mt-1.5 flex h-10 items-center gap-2">
-                    <Switch
-                      checked={smartCopy}
-                      onCheckedChange={setSmartCopy}
-                      disabled={isDisabled}
-                    />
-                    <span className="text-sm text-muted-foreground">{smartCopy ? t("enabled") : t("disabled")}</span>
-                  </div>
-                </div>
+              {/* Parallel Count */}
+              <div>
+                <label className="text-sm font-medium">{t("parallelCount")}</label>
+                <Select value={parallelCount.toString()} onValueChange={(v) => setParallelCount(Number(v))} disabled={isDisabled}>
+                  <SelectTrigger className="mt-1.5 w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 ({t("serial")})</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Hardware Info */}
@@ -546,9 +612,16 @@ function HomePage() {
                   </>
                 )}
                 {status === "completed" && (
-                  <Button onClick={clearFiles} variant="outline" className="flex-1" size="lg">
-                    {t("clearAndRestart")}
-                  </Button>
+                  <>
+                    <Button onClick={clearFiles} variant="outline" className="flex-1" size="lg">
+                      <Square size={16} className="mr-2" />
+                      {t("clearAll")}
+                    </Button>
+                    <Button onClick={restartConversion} className="flex-1" size="lg">
+                      <Play size={16} className="mr-2" />
+                      {t("restart")}
+                    </Button>
+                  </>
                 )}
               </div>
 
