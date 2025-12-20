@@ -31,8 +31,8 @@ const config: ForgeConfig = {
       name: "@electron-forge/publisher-github",
       config: {
         repository: {
-          owner: "LuanRoger",
-          name: "bhwa233-tools",
+          owner: "lxw15337674",
+          name: "bhwa233-desktop",
         },
         draft: true,
         prerelease: false,
