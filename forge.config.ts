@@ -10,7 +10,10 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    extraResource: ["resources"],
+    extraResource: [
+      process.platform === "win32" ? "resources/ffmpeg.exe" : "resources/ffmpeg",
+      process.platform === "win32" ? "resources/ffprobe.exe" : "resources/ffprobe",
+    ],
   },
   rebuildConfig: {},
   makers: [
@@ -29,7 +32,7 @@ const config: ForgeConfig = {
       config: {
         repository: {
           owner: "LuanRoger",
-          name: "electron-shadcn",
+          name: "bhwa233-tools",
         },
         draft: true,
         prerelease: false,

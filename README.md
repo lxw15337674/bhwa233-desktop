@@ -1,209 +1,93 @@
-# electron-shadcn
+# bhwa233-tools-desktop
 
-Electron in all its glory. Everything you will need to develop your beautiful desktop application.
+A modern desktop application built with **Electron**, **React**, and **Shadcn UI**. This project utilizes **Vite** for fast build times and **oRPC** for type-safe IPC communication.
 
-![Demo GIF](https://github.com/LuanRoger/electron-shadcn/blob/main/images/demo.gif)
+## Tech Stack 🛠️
 
-## Libs and tools
-
-To develop a Electron app, you probably will need some UI, test, formatter, style or other kind of library or framework, so let me install and configure some of them to you.
-
-### Core 🏍️
-
+### Core
 - [Electron 39](https://www.electronjs.org)
 - [Vite 7](https://vitejs.dev)
-
-### DX 🛠️
-
 - [TypeScript 5.9](https://www.typescriptlang.org)
-- [oRPC](https://orpc.unnoq.com)
-- [Prettier](https://prettier.io)
-- [ESLint 9](https://eslint.org)
-- [Zod 4](https://zod.dev)
-- [React Query (TanStack)](https://react-query.tanstack.com)
 
-### UI 🎨
-
+### UI & Styling
 - [React 19.2](https://reactjs.org)
-- [Tailwind 4](https://tailwindcss.com)
+- [Tailwind CSS 4](https://tailwindcss.com)
 - [Shadcn UI](https://ui.shadcn.com)
-- [Geist](https://vercel.com/font) as default font
+- [Lucide React](https://lucide.dev)
+- [TanStack Router](https://tanstack.com/router)
 - [i18next](https://www.i18next.com)
-- [TanStack Router](https://tanstack.com/router) (with file based routing)
-- [Lucide](https://lucide.dev)
 
-### Test 🧪
+### Backend & State
+- [oRPC](https://orpc.unnoq.com) (Type-safe IPC)
+- [TanStack Query](https://tanstack.com/query)
+- [Zod 4](https://zod.dev)
 
+### Testing
 - [Vitest](https://vitest.dev)
 - [Playwright](https://playwright.dev)
-- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro)
 
-### Packing and distribution 📦
+## Getting Started 🚀
 
-- [Electron Forge](https://www.electronforge.io)
+### Prerequisites
+- Node.js (v22 recommended)
+- pnpm (managed via Corepack or `npm install -g pnpm`)
 
-### CI/CD 🚀
+### Installation
 
-- Pre-configured [GitHub Actions workflow](https://github.com/LuanRoger/electron-shadcn/blob/main/.github/workflows/playwright.yml), for test with Playwright
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd bhwa233-desktop
+   ```
 
-### Project preferences 🎯
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-- Use Context isolation
-- [React Compiler](https://react.dev/learn/react-compiler) is enabled by default.
-- `titleBarStyle`: hidden (Using custom title bar)
-- Geist as default font
-- Some default styles was applied, check the [`styles`](https://github.com/LuanRoger/electron-shadcn/tree/main/src/styles) directory
-- React DevTools are installed by default
+3. Start the development server:
+   ```bash
+   pnpm start
+   ```
 
-## Directory structure
+## Scripts 📜
+
+| Command | Description |
+| :--- | :--- |
+| `pnpm start` | Starts the application in development mode. |
+| `pnpm package` | Packages the application into an executable bundle. |
+| `pnpm make` | Generates platform-specific installers (e.g., .exe, .msi). |
+| `pnpm lint` | Runs ESLint to catch code quality issues. |
+| `pnpm format` | Checks code formatting with Prettier. |
+| `pnpm format:write` | Formats code with Prettier. |
+| `pnpm test` | Runs unit tests with Vitest. |
+| `pnpm test:e2e` | Runs E2E tests with Playwright (requires build). |
+
+## Directory Structure 📂
 
 ```plaintext
 src/
-├── actions
-├── assets
-├── components/
-│   └── ui
-├── constants
-├── ipc/
-│   ├── theme
-│   └── window
-├── layouts
-├── localization
-├── routes
-├── styles
-├── tests
-├── types
-└── utils
+├── actions/       # Client-side IPC wrappers (Bridge layer)
+├── assets/        # Static assets (fonts, images)
+├── components/    # React components
+│   └── ui/        # Shadcn UI components
+├── constants/     # Global constants
+├── ipc/           # Main process handlers & Zod schemas (oRPC)
+├── layouts/       # Page layouts
+├── localization/  # i18n configuration
+├── routes/        # TanStack Router pages
+├── styles/        # Global CSS (Tailwind)
+├── tests/         # Unit and E2E tests
+├── types/         # TypeScript type definitions
+└── utils/         # Utility functions
 ```
 
-### Main directories
+## Architecture
 
-Here is a brief description of the main directories:
-
-- `src/`: Main directory
-  - `actions`: Functions that will call IPC functions via oRPC (it's mostly act as a bridge between the renderer process and the main process)
-  - `assets/`: Assets like images, fonts, etc.
-  - `components/`: UI components
-    - `ui/`: Stores shadcn-ui components (this is the default directory used by shadcn-ui)
-  - `ipc/`: Stores the configuration of the IPC communication using [oRPC](https://orpc.unnoq.com) for type-safety communication. Also have the handlers for the main process.
-  - `layout/`: Layouts for the pages
-  - `localization/`: i18next configuration and translation files.
-  - `routes/`: TanStack Router's root configuration, route definitions and pages.
-  - `style/`: Global styles
-  - `tests/`: Stores tests (from Vitest and Playwright)
-
-## NPM script
-
-To run any of those scripts:
-
-```bash
-npm run <script>
-```
-
-- `start`: Start the app in development mode
-- `package`: Package your application into a platform-specific executable bundle and put the result in a folder.
-- `make`: Generate platform-specific distributables (e.g. .exe, .dmg, etc) of your application for distribution.
-- `publish`: Electron Forge's way of taking the artifacts generated by the `make` command and sending them to a service somewhere for you to distribute or use as updates.
-- `lint`: Run ESLint to lint the code
-- `format`: Run Prettier to check the code (it doesn't change the code)
-- `format:write`: Run Prettier to format the code
-- `test`: Run the default unit-test script (Vitest)
-- `test:watch`: Run the default unit-test script in watch mode (Vitest)
-- `test:unit`: Run the Vitest tests
-- `test:e2e`: Run the Playwright tests
-- `test:all`: Run all tests (Vitest and Playwright)
-
-> The test scripts involving Playwright require the app be builded before running the tests. So, before run the tests, run the `package`, `make` or `publish` script.
-
-## How to use
-
-1. Clone this repository
-
-```bash
-git clone https://github.com/LuanRoger/electron-shadcn.git
-```
-
-Or use it as a template on GitHub
-
-2. Install dependencies
-
-```bash
-npm install
-```
-
-3. Run the app
-
-```bash
-npm run start
-```
-
-Now you can go directly to `/src/routes/index.tsx` and modify the app as you want.
-
-> You can also delete the `/src/routes/second.tsx` file if you don't want a second page.
-
-## Auto update
-
-> [!WARNING]
-> This feature only work in open-source repositories in GitHub, if you need to use in a private repository, you need to setup a custom update server. Check the [Updating Applications](https://www.electronjs.org/docs/latest/tutorial/updates) section in the Electron documentation for more details.
-
-The auto update uses GitHub Releases as source for the updates. The `publish` script will automatically create a new release with the version specified in your `package.json` file. You can run locally the `publish` script to create a new release, but you need to set the `GITHUB_TOKEN` environment variable with a GitHub Personal Access Token that has permission to create releases in your repository.
-
-You can also use the GitHub Actions workflow to automatically create a new release when you push a new tag to the repository. The workflow need to be triggered manually, but you can modify to fit your needs. Also, the release is created as draft by default, so you can review and set a proper description before publish.
-
-> Check the [`.github/workflows/publish.yml`](https://github.com/LuanRoger/electron-shadcn/blob/main/.github/workflows/publish.yaml) file for more details.
-
-When you open the app, it will check for updates automatically. If an update is available, it will download and install the update, after that, it will restart the app to apply the update. This ensure  that your users always have the latest version of your app.
-
-The auto update is implemented using [update-electron-app](https://github.com/electron/update-electron-app) to check the updates and apply them. For the publishing, it is using the [Electron Forge's GitHub publisher](https://www.electronforge.io/config/publishers/github).
-
-### Configuration
-
-1. In the `forge.config.ts` file, set the repository information in the `publishers` section:
-
-```ts
-//...
-publishers: [
-    {
-      name: "@electron-forge/publisher-github",
-      config: {
-        repository: {
-          owner: "username", // Your GitHub username
-          name: "repository-name", // Your repository name
-        },
-        draft: true,
-        prerelease: false,
-      },
-    },
-  ],
-//...
-```
-
-2. In the `src/main/index.ts` file, set the `repo` in the `updateElectronApp` function, this will point to your repository where the app will check for updates:
-
-```ts
-function checkForUpdates() {
-  updateElectronApp({
-    updateSource: {
-      type: UpdateSourceType.ElectronPublicUpdateService,
-      repo: "username/repository-name",
-    },
-  });
-}
-```
-
-3. That's it! Now your app is configured to use auto update.
-
-You can publish a new release by running the `publish` script or triggering the `Publish Release` GitHub Actions workflow.
-
-## Used by
-
-- [yaste](https://github.com/LuanRoger/yaste) - yaste (Yet another super ₛᵢₘₚₗₑ text editor) is a text editor, that can be used as an alternative to the native text editor of your SO, maybe.
-- [eletric-drizzle](https://github.com/LuanRoger/electric-drizzle) - shadcn-ui and Drizzle ORM with Electron.
-- [Wordle Game](https://github.com/masonyekta/wordle-game) - A Wordle game which features interactive gameplay, cross-platform compatibility, and integration with a custom Wordle API for word validation and letter correctness.
-- [Mehr 🌟](https://github.com/xmannii/MehrLocalChat) - A modern, elegant local AI chatbot application using Electron, React, shadcn/ui, and Ollama.
-
-> Does you've used this template in your project? Add it here and open a PR.
+This project uses **oRPC** to bridge the Electron Main process and the Renderer process.
+- **IPC Handlers**: Defined in `src/ipc/` (Server-side).
+- **Actions**: Defined in `src/actions/` (Client-side).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/LuanRoger/electron-shadcn/blob/main/LICENSE) file for details.
+MIT
