@@ -1,7 +1,7 @@
 {
   "name": "bhwa233-tools",
   "productName": "bhwa233-tools-desktop",
-  "version": "1.2.0",
+  "version": "0.0.1",
   "description": "Electron Forge with shadcn-ui (Vite + Typescript)",
   "main": ".vite/build/main.js",
   "private": true,
