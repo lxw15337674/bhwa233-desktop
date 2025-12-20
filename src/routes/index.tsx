@@ -36,8 +36,7 @@ import type {
   BatchFileStatus,
   BatchOverallProgress,
   HardwareInfo,
-  SpeedPreset,
-  VideoCodec,
+  ConversionMode,
   VideoInfo,
 } from "@/ipc/media/schemas";
 import {
@@ -97,10 +96,8 @@ function HomePage() {
   const { t } = useTranslation();
   const [files, setFiles] = useState<FileItem[]>([]);
   const [format, setFormat] = useState("mp4");
-  const [speedPreset, setSpeedPreset] = useState<SpeedPreset>("balanced");
+  const [conversionMode, setConversionMode] = useState<ConversionMode>("original");
   const [parallelCount, setParallelCount] = useState(1);
-  const [smartCopy, setSmartCopy] = useState(true);
-  const [videoCodec, setVideoCodec] = useState<VideoCodec>("h264");
   const [outputDir, setOutputDir] = useState<string>("");
   const [filenameTemplate, setFilenameTemplate] = useState("{name}");
   const [status, setStatus] = useState<
@@ -297,10 +294,8 @@ function HomePage() {
         format,
         outputDir || undefined,
         filenameTemplate || undefined,
-        speedPreset,
+        conversionMode,
         parallelCount,
-        smartCopy,
-        videoCodec,
       );
       setStatus("completed");
     } catch (error) {
@@ -607,9 +602,65 @@ function HomePage() {
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium">
-                  {t("outputFormat")}
-                </label>
+                <div className="flex items-center gap-1.5">
+                  <label className="text-sm font-medium">
+                    {t("outputFormat")}
+                  </label>
+                  <TooltipProvider delayDuration={0}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info
+                          size={14}
+                          className="text-muted-foreground cursor-help"
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-xs">
+                        <div className="space-y-2 text-xs">
+                          <div>
+                            <p className="font-semibold mb-1">{t("videoFormats")}</p>
+                            <div className="space-y-0.5">
+                              <p>
+                                <code className="bg-secondary rounded px-1">MP4</code> - {t("fmtMp4Desc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">WebM</code> - {t("fmtWebmDesc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">AVI</code> - {t("fmtAviDesc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">MOV</code> - {t("fmtMovDesc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">MKV</code> - {t("fmtMkvDesc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">FLV</code> - {t("fmtFlvDesc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">WMV</code> - {t("fmtWmvDesc")}
+                              </p>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="font-semibold mb-1">{t("otherFormats")}</p>
+                            <div className="space-y-0.5">
+                              <p>
+                                <code className="bg-secondary rounded px-1">GIF</code> - {t("fmtGifDesc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">MP3</code> - {t("fmtMp3Desc")}
+                              </p>
+                              <p>
+                                <code className="bg-secondary rounded px-1">WAV</code> - {t("fmtWavDesc")}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <Select
                   value={format}
                   onValueChange={setFormat}
@@ -642,77 +693,36 @@ function HomePage() {
                   </SelectContent>
                 </Select>
               </div>
-              {/* Video Codec (only for compatible formats) */}
-              {["mp4", "mkv", "mov", "avi", "flv"].includes(format) && (
-                <div>
-                  <label className="text-sm font-medium">
-                    {t("videoCodec")}
-                  </label>
-                  <Select
-                    value={videoCodec}
-                    onValueChange={(v) => setVideoCodec(v as VideoCodec)}
-                    disabled={isDisabled}
-                  >
-                    <SelectTrigger className="mt-1.5 w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="h264">H.264 (AVC)</SelectItem>
-                      <SelectItem
-                        value="hevc"
-                        disabled={hardwareInfo && !hardwareInfo.hevcSupport}
-                      >
-                        H.265 (HEVC){" "}
-                        {hardwareInfo &&
-                          !hardwareInfo.hevcSupport &&
-                          `(${t("notSupported")})`}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <p className="text-muted-foreground mt-1 text-xs">
-                    {t("hevcHint")}
-                  </p>
-                </div>
-              )}
-              {/* Speed Preset */}
+              {/* Conversion Mode */}
               <div>
                 <label className="text-sm font-medium">
-                  {t("speedPreset")}
+                  {t("conversionMode")}
                 </label>
                 <Select
-                  value={speedPreset}
-                  onValueChange={(v) => setSpeedPreset(v as SpeedPreset)}
+                  value={conversionMode}
+                  onValueChange={(v) => setConversionMode(v as ConversionMode)}
                   disabled={isDisabled}
                 >
                   <SelectTrigger className="mt-1.5 w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="fast">{t("presetFast")}</SelectItem>
-                    <SelectItem value="balanced">
-                      {t("presetBalanced")}
+                    <SelectItem value="original">
+                      {t("modeOriginal")}
                     </SelectItem>
-                    <SelectItem value="quality">
-                      {t("presetQuality")}
+                    <SelectItem value="highQuality">
+                      {t("modeHighQuality")}
+                    </SelectItem>
+                    <SelectItem value="fast">
+                      {t("modeFast")}
                     </SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              {/* Smart Copy Toggle */}
-              <div className="flex items-center justify-between rounded-lg border p-3">
-                <div className="space-y-0.5">
-                  <label className="text-sm font-medium">
-                    {t("smartCopy")}
-                  </label>
-                  <p className="text-muted-foreground text-xs">
-                    {t("smartCopyDesc")}
-                  </p>
-                </div>
-                <Switch
-                  checked={smartCopy}
-                  onCheckedChange={setSmartCopy}
-                  disabled={isDisabled}
-                />
+                <p className="text-muted-foreground mt-1 text-xs">
+                  {conversionMode === "original" && t("modeOriginalDesc")}
+                  {conversionMode === "highQuality" && t("modeHighQualityDesc")}
+                  {conversionMode === "fast" && t("modeFastDesc")}
+                </p>
               </div>
               {/* Parallel Count */}
               <div>

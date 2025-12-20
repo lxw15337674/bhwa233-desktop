@@ -3,7 +3,6 @@
     "allow": [
       "*",
       "Bash(dir /B \"C:\\own\\code\\bhwa233-desktop\")",
-      "Bash(*)",
       "Bash(pnpm lint:*)",
       "Bash(node scripts/copy-ffmpeg.js:*)",
       "Bash(timeout 15 pnpm start:*)",
@@ -11,7 +10,6 @@
       "Bash(pnpm add:*)",
       "Bash(npx tsc:*)",
       "Bash(npx shadcn@latest add:*)",
-      "Bash(node *)",
       "Bash(pnpm start)",
       "WebSearch",
       "Bash(test:*)"

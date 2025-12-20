@@ -33,11 +33,8 @@ export interface HardwareInfo {
   hevcSupport: boolean; // Whether GPU supports HEVC encoding
 }
 
-// Speed presets
-export type SpeedPreset = "fast" | "balanced" | "quality";
-
-// Video codec options
-export type VideoCodec = "h264" | "hevc";
+// Conversion modes
+export type ConversionMode = "original" | "highQuality" | "fast";
 
 // Batch conversion schemas
 export const batchConvertSchema = z.object({
@@ -45,10 +42,8 @@ export const batchConvertSchema = z.object({
   format: z.string(),
   outputDir: z.string().optional(),
   filenameTemplate: z.string().optional(), // Template: {name}, {date}, {time}, {format}
-  speedPreset: z.enum(["fast", "balanced", "quality"]).optional(),
+  conversionMode: z.enum(["original", "highQuality", "fast"]).optional(), // Conversion mode
   parallelCount: z.number().min(1).max(4).optional(), // 1-4 parallel conversions
-  smartCopy: z.boolean().optional(), // Enable smart stream copy when compatible
-  videoCodec: z.enum(["h264", "hevc"]).optional(), // Video codec: H.264 or HEVC/H.265
 });
 
 export const batchControlSchema = z.object({

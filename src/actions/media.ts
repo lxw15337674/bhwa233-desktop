@@ -3,8 +3,7 @@ import type {
   VideoInfo,
   BatchProgress,
   HardwareInfo,
-  SpeedPreset,
-  VideoCodec,
+  ConversionMode,
 } from "@/ipc/media/schemas";
 
 export async function convertVideo(inputPath: string, format: string) {
@@ -24,20 +23,16 @@ export async function batchConvert(
   format: string,
   outputDir?: string,
   filenameTemplate?: string,
-  speedPreset?: SpeedPreset,
+  conversionMode?: ConversionMode,
   parallelCount?: number,
-  smartCopy?: boolean,
-  videoCodec?: VideoCodec,
 ) {
   return ipc.client.media.batchConvert({
     files,
     format,
     outputDir,
     filenameTemplate,
-    speedPreset,
+    conversionMode,
     parallelCount,
-    smartCopy,
-    videoCodec,
   });
 }
 
@@ -49,4 +44,4 @@ export async function batchControl(action: "pause" | "resume" | "cancel") {
   return ipc.client.media.batchControl({ action });
 }
 
-export type { VideoInfo, BatchProgress, HardwareInfo, SpeedPreset, VideoCodec };
+export type { VideoInfo, BatchProgress, HardwareInfo, ConversionMode };

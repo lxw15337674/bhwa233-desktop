@@ -9,8 +9,7 @@ import {
   BatchOverallProgress,
   HardwareInfo,
   GpuAccelType,
-  SpeedPreset,
-  VideoCodec,
+  ConversionMode,
 } from "./schemas";
 import { app, dialog, Notification } from "electron";
 import execa, { ExecaChildProcess } from "execa";
@@ -239,85 +238,83 @@ const sendNotification = (title: string, body: string) => {
   }
 };
 
-// Get encoder arguments based on format, GPU, and video codec
+// Get encoder arguments based on format, GPU, and conversion mode
 const getEncoderArgs = (
   format: string,
   gpuAccel: GpuAccelType,
-  speedPreset: SpeedPreset,
+  conversionMode: ConversionMode,
   threads: number,
-  videoCodec: VideoCodec = "h264",
+  hevcSupport: boolean,
 ): string[] => {
   const args: string[] = [];
 
   // Thread count
   args.push("-threads", threads.toString());
 
-  // CRF/CQ values for different presets (lower = better quality, larger file)
-  const crfMap: Record<SpeedPreset, { h264: number; hevc: number }> = {
-    fast: { h264: 28, hevc: 32 },
-    balanced: { h264: 23, hevc: 28 },
-    quality: { h264: 18, hevc: 24 },
-  };
+  // Determine encoding parameters based on mode
+  let useHevc = false;
+  let crf = 23;
+  let preset = "medium";
 
-  // Speed preset mapping for different encoders
-  const presetMap: Record<
-    SpeedPreset,
-    { software: string; nvenc: string; qsv: string; amf: string }
-  > = {
-    fast: { software: "ultrafast", nvenc: "p1", qsv: "veryfast", amf: "speed" },
-    balanced: {
-      software: "medium",
-      nvenc: "p4",
-      qsv: "medium",
-      amf: "balanced",
-    },
-    quality: { software: "slow", nvenc: "p7", qsv: "veryslow", amf: "quality" },
-  };
-
-  const preset = presetMap[speedPreset];
-  const crf = crfMap[speedPreset];
+  if (conversionMode === "highQuality") {
+    // High Quality: HEVC (if supported) + CRF 23 + slower preset for best compression/quality ratio
+    useHevc = hevcSupport;
+    crf = 23;
+    preset = "slower";
+  } else if (conversionMode === "fast") {
+    // Fast: H.264 + CRF 28 + fast preset for quick processing with acceptable quality loss
+    useHevc = false;
+    crf = 28;
+    preset = "fast";
+  } else {
+    // Original mode: Should not reach here (handled by stream copy), but fallback to high quality
+    useHevc = hevcSupport;
+    crf = 18;
+    preset = "medium";
+  }
 
   // Video formats with H.264 or HEVC
   if (["mp4", "mov", "mkv", "avi", "flv"].includes(format)) {
-    if (videoCodec === "hevc") {
+    if (useHevc) {
       // HEVC/H.265 encoding
       if (gpuAccel === "nvenc") {
         args.push(
           "-c:v",
           "hevc_nvenc",
           "-preset",
-          preset.nvenc,
+          preset === "slower" ? "p7" : preset === "fast" ? "p1" : "p4",
           "-cq",
-          crf.hevc.toString(),
+          crf.toString(),
         );
       } else if (gpuAccel === "qsv") {
         args.push(
           "-c:v",
           "hevc_qsv",
           "-preset",
-          preset.qsv,
+          preset === "slower" ? "veryslow" : preset === "fast" ? "veryfast" : "medium",
           "-global_quality",
-          crf.hevc.toString(),
+          crf.toString(),
         );
       } else if (gpuAccel === "amf") {
         args.push(
           "-c:v",
           "hevc_amf",
           "-quality",
-          preset.amf,
+          preset === "slower" ? "quality" : preset === "fast" ? "speed" : "balanced",
           "-qp_i",
-          crf.hevc.toString(),
+          crf.toString(),
           "-qp_p",
-          crf.hevc.toString(),
+          crf.toString(),
         );
       } else {
+        // Software HEVC
         args.push(
           "-c:v",
           "libx265",
           "-preset",
-          preset.software,
+          preset,
           "-crf",
-          crf.hevc.toString(),
+          crf.toString(),
         );
       }
     } else {
@@ -327,38 +324,39 @@ const getEncoderArgs = (
           "-c:v",
           "h264_nvenc",
           "-preset",
-          preset.nvenc,
+          preset === "slower" ? "p7" : preset === "fast" ? "p1" : "p4",
           "-cq",
-          crf.h264.toString(),
+          crf.toString(),
         );
       } else if (gpuAccel === "qsv") {
         args.push(
           "-c:v",
           "h264_qsv",
           "-preset",
-          preset.qsv,
+          preset === "slower" ? "veryslow" : preset === "fast" ? "veryfast" : "medium",
           "-global_quality",
-          crf.h264.toString(),
+          crf.toString(),
         );
       } else if (gpuAccel === "amf") {
         args.push(
           "-c:v",
           "h264_amf",
           "-quality",
-          preset.amf,
+          preset === "slower" ? "quality" : preset === "fast" ? "speed" : "balanced",
           "-qp_i",
-          crf.h264.toString(),
+          crf.toString(),
           "-qp_p",
-          crf.h264.toString(),
+          crf.toString(),
         );
       } else {
+        // Software H.264
         args.push(
           "-c:v",
           "libx264",
           "-preset",
-          preset.software,
+          preset,
           "-crf",
-          crf.h264.toString(),
+          crf.toString(),
         );
       }
     }
@@ -366,10 +364,10 @@ const getEncoderArgs = (
   }
   // WebM (VP9 - no GPU acceleration widely available)
   else if (format === "webm") {
-    args.push("-c:v", "libvpx-vp9", "-crf", crf.h264.toString(), "-b:v", "0");
+    args.push("-c:v", "libvpx-vp9", "-crf", crf.toString(), "-b:v", "0");
     args.push(
       "-cpu-used",
-      speedPreset === "fast" ? "4" : speedPreset === "balanced" ? "2" : "1",
+      preset === "fast" ? "4" : preset === "slower" ? "1" : "2",
     );
     args.push("-c:a", "libopus");
   }
@@ -383,8 +381,7 @@ const getEncoderArgs = (
   }
   // Audio only
   else if (format === "mp3") {
-    const mp3Quality =
-      speedPreset === "fast" ? "4" : speedPreset === "balanced" ? "2" : "0";
+    const mp3Quality = preset === "fast" ? "4" : preset === "slower" ? "0" : "2";
     args.push("-vn", "-c:a", "libmp3lame", "-q:a", mp3Quality);
   } else if (format === "wav") {
     args.push("-vn", "-c:a", "pcm_s16le");
@@ -562,8 +559,9 @@ export const convertVideo = os
     const encoderArgs = getEncoderArgs(
       format,
       hwInfo.gpuAccel,
-      "balanced",
+      "highQuality", // Default to high quality mode
       hwInfo.cpuThreads,
+      hwInfo.hevcSupport,
     );
 
     // 1. Get Duration
@@ -611,7 +609,7 @@ let batchState: {
   files: string[];
   format: string;
   outputDir?: string;
-  speedPreset: SpeedPreset;
+  conversionMode: ConversionMode;
   results: BatchProgress[];
 } = {
   isPaused: false,
@@ -619,7 +617,7 @@ let batchState: {
   currentProcesses: new Map(),
   files: [],
   format: "",
-  speedPreset: "balanced",
+  conversionMode: "original",
   results: [],
 };
 
@@ -630,7 +628,7 @@ const resetBatchState = () => {
     currentProcesses: new Map(),
     files: [],
     format: "",
-    speedPreset: "balanced",
+    conversionMode: "original",
     results: [],
   };
 };
@@ -647,10 +645,8 @@ const convertSingleFile = async (
   format: string,
   outputDir: string | undefined,
   filenameTemplate: string | undefined,
-  speedPreset: SpeedPreset,
+  conversionMode: ConversionMode,
   hwInfo: HardwareInfo,
-  smartCopy: boolean,
-  videoCodec: VideoCodec,
   fileIndex: number,
   onProgress?: (percent: number) => void,
 ): Promise<{
@@ -683,9 +679,10 @@ const convertSingleFile = async (
   }
 
   // Check if smart copy is possible for video and audio separately
+  // Smart copy is only used in "original" mode
   let copyVideo = false;
   let copyAudio = false;
-  if (smartCopy) {
+  if (conversionMode === "original") {
     const { videoCodec: srcVideoCodec, audioCodec: srcAudioCodec } =
       await getVideoCodec(inputPath);
     const copyCheck = canUseStreamCopy(srcVideoCodec, srcAudioCodec, format);
@@ -717,9 +714,9 @@ const convertSingleFile = async (
     const encoderArgs = getEncoderArgs(
       format,
       hwInfo.gpuAccel,
-      speedPreset,
+      conversionMode,
       hwInfo.cpuThreads,
-      videoCodec,
+      hwInfo.hevcSupport,
     );
     // Filter out audio-related args, we'll handle audio separately
     const videoArgs = encoderArgs.filter((arg, idx, arr) => {
@@ -805,17 +802,15 @@ export const batchConvert = os
         format,
         outputDir,
         filenameTemplate,
-        speedPreset = "balanced",
+        conversionMode = "original",
         parallelCount = 1,
-        smartCopy = true,
-        videoCodec = "h264",
       },
     }) => {
       resetBatchState();
       batchState.files = files;
       batchState.format = format;
       batchState.outputDir = outputDir;
-      batchState.speedPreset = speedPreset;
+      batchState.conversionMode = conversionMode;
       batchState.results = files.map((filePath, index) => ({
         fileIndex: index,
         filePath,
@@ -864,10 +859,8 @@ export const batchConvert = os
           format,
           outputDir,
           filenameTemplate,
-          speedPreset,
+          conversionMode,
           hwInfo,
-          smartCopy,
-          videoCodec,
           fileIndex,
           (percent) => {
             batchState.results[fileIndex].progress = percent;
