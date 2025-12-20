@@ -31,6 +31,7 @@ The app uses oRPC for type-safe IPC between renderer and main processes:
 3. **Client** (`src/ipc/manager.ts`): `IPCManager` class manages the oRPC client connection
 
 **Adding a new IPC module:**
+
 1. Create schema in `src/ipc/<module>/schemas.ts` using Zod
 2. Implement handlers in `src/ipc/<module>/handlers.ts` using `os.handler()`
 3. Export handlers in `src/ipc/<module>/index.ts`
@@ -42,6 +43,7 @@ Existing IPC modules: `app`, `shell`, `theme`, `window`, `media`
 ### Routing (TanStack Router)
 
 File-based routing in `src/routes/`:
+
 - `__root.tsx`: Root layout wrapping all routes
 - `index.tsx`: Home page (`/`)
 - Create new files to add routes automatically

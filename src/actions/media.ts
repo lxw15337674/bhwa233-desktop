@@ -1,5 +1,11 @@
 import { ipc } from "@/ipc/manager";
-import type { VideoInfo, BatchProgress, HardwareInfo, SpeedPreset, VideoCodec } from "@/ipc/media/schemas";
+import type {
+  VideoInfo,
+  BatchProgress,
+  HardwareInfo,
+  SpeedPreset,
+  VideoCodec,
+} from "@/ipc/media/schemas";
 
 export async function convertVideo(inputPath: string, format: string) {
   return ipc.client.media.convertVideo({ inputPath, format });
@@ -21,9 +27,18 @@ export async function batchConvert(
   speedPreset?: SpeedPreset,
   parallelCount?: number,
   smartCopy?: boolean,
-  videoCodec?: VideoCodec
+  videoCodec?: VideoCodec,
 ) {
-  return ipc.client.media.batchConvert({ files, format, outputDir, filenameTemplate, speedPreset, parallelCount, smartCopy, videoCodec });
+  return ipc.client.media.batchConvert({
+    files,
+    format,
+    outputDir,
+    filenameTemplate,
+    speedPreset,
+    parallelCount,
+    smartCopy,
+    videoCodec,
+  });
 }
 
 export async function selectFolder(): Promise<string | null> {

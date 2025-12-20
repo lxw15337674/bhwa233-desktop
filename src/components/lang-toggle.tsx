@@ -13,7 +13,7 @@ export default function LangToggle() {
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-sm font-medium leading-none">
+      <label className="text-sm leading-none font-medium">
         {t("selectLanguage")}
       </label>
       <ToggleGroup

@@ -6,16 +6,16 @@ This is a modern desktop application template built with **Electron 39**, **Vite
 
 ## Key Technologies
 
-*   **Runtime:** Electron 39
-*   **Build Tool:** Vite 7
-*   **Language:** TypeScript 5.9
-*   **UI Framework:** React 19.2
-*   **Styling:** Tailwind CSS 4, Shadcn UI, Lucide React (Icons)
-*   **Routing:** TanStack Router (File-based)
-*   **IPC/State:** oRPC (Type-safe IPC), React Query
-*   **Validation:** Zod 4
-*   **Internationalization:** i18next
-*   **Testing:** Vitest (Unit), Playwright (E2E)
+- **Runtime:** Electron 39
+- **Build Tool:** Vite 7
+- **Language:** TypeScript 5.9
+- **UI Framework:** React 19.2
+- **Styling:** Tailwind CSS 4, Shadcn UI, Lucide React (Icons)
+- **Routing:** TanStack Router (File-based)
+- **IPC/State:** oRPC (Type-safe IPC), React Query
+- **Validation:** Zod 4
+- **Internationalization:** i18next
+- **Testing:** Vitest (Unit), Playwright (E2E)
 
 ## Architecture
 
@@ -23,48 +23,47 @@ The project follows a modular structure separating the renderer (UI) from the ma
 
 ### Directory Structure
 
-*   **`src/actions/`**: Client-side functions that call IPC methods. This acts as the bridge/API layer for the UI.
-*   **`src/ipc/`**: Defines the IPC router, schemas (Zod), and handlers for the main process.
-    *   `router.ts`: Aggregates all IPC modules (app, shell, theme, window).
-    *   `manager.ts`: Manages the IPC connection.
-*   **`src/routes/`**: Application pages and routing configuration (TanStack Router).
-    *   `__root.tsx`: The root layout component.
-    *   `index.tsx`: The home page.
-*   **`src/components/ui/`**: Reusable UI components (Shadcn UI).
-*   **`src/layouts/`**: Layout wrappers (e.g., `base-layout.tsx`).
-*   **`src/tests/`**: Unit (`unit/`) and End-to-End (`e2e/`) tests.
+- **`src/actions/`**: Client-side functions that call IPC methods. This acts as the bridge/API layer for the UI.
+- **`src/ipc/`**: Defines the IPC router, schemas (Zod), and handlers for the main process.
+  - `router.ts`: Aggregates all IPC modules (app, shell, theme, window).
+  - `manager.ts`: Manages the IPC connection.
+- **`src/routes/`**: Application pages and routing configuration (TanStack Router).
+  - `__root.tsx`: The root layout component.
+  - `index.tsx`: The home page.
+- **`src/components/ui/`**: Reusable UI components (Shadcn UI).
+- **`src/layouts/`**: Layout wrappers (e.g., `base-layout.tsx`).
+- **`src/tests/`**: Unit (`unit/`) and End-to-End (`e2e/`) tests.
 
 ## Development Workflow
 
 ### Commands
 
-| Command | Description |
-| :--- | :--- |
-| `npm run start` | Starts the application in development mode with hot reloading. |
-| `npm run package` | Packages the application into a platform-specific executable bundle. |
-| `npm run make` | Generates platform-specific distributables (installers). |
-| `npm run lint` | Runs ESLint to check for code quality issues. |
-| `npm run format` | Checks code formatting with Prettier. |
-| `npm run format:write` | Formats code with Prettier. |
-| `npm run test` | Runs unit tests using Vitest. |
-| `npm run test:e2e` | Runs E2E tests using Playwright (requires a build first). |
+| Command                | Description                                                          |
+| :--------------------- | :------------------------------------------------------------------- |
+| `npm run start`        | Starts the application in development mode with hot reloading.       |
+| `npm run package`      | Packages the application into a platform-specific executable bundle. |
+| `npm run make`         | Generates platform-specific distributables (installers).             |
+| `npm run lint`         | Runs ESLint to check for code quality issues.                        |
+| `npm run format`       | Checks code formatting with Prettier.                                |
+| `npm run format:write` | Formats code with Prettier.                                          |
+| `npm run test`         | Runs unit tests using Vitest.                                        |
+| `npm run test:e2e`     | Runs E2E tests using Playwright (requires a build first).            |
 
 ### Conventions
 
-*   **Imports:** Use the `@/` alias to refer to the `src` directory (e.g., `import { Button } from "@/components/ui/button"`).
-*   **IPC:**
-    1.  Define the schema and type in `src/ipc/<module>/schemas.ts`.
-    2.  Implement the handler in `src/ipc/<module>/handlers.ts`.
-    3.  Register it in `src/ipc/<module>/index.ts` and `src/ipc/router.ts`.
-    4.  Create a client-side wrapper in `src/actions/<module>.ts`.
-*   **Routing:** Create new files in `src/routes/` to automatically generate routes.
-*   **Styling:** Use Tailwind utility classes. For complex components, use `cn()` (clsx + tailwind-merge) for class conditional logic.
+- **Imports:** Use the `@/` alias to refer to the `src` directory (e.g., `import { Button } from "@/components/ui/button"`).
+- **IPC:**
+  1.  Define the schema and type in `src/ipc/<module>/schemas.ts`.
+  2.  Implement the handler in `src/ipc/<module>/handlers.ts`.
+  3.  Register it in `src/ipc/<module>/index.ts` and `src/ipc/router.ts`.
+  4.  Create a client-side wrapper in `src/actions/<module>.ts`.
+- **Routing:** Create new files in `src/routes/` to automatically generate routes.
+- **Styling:** Use Tailwind utility classes. For complex components, use `cn()` (clsx + tailwind-merge) for class conditional logic.
 
 ## Testing
 
-*   **Unit Tests:** Located in `src/tests/unit`. Run with `npm run test`. Uses `vitest` and `testing-library/react`.
-*   **E2E Tests:** Located in `src/tests/e2e`. Run with `npm run test:e2e`. Uses `playwright`. **Note:** You must build the app (`npm run package`) before running E2E tests.
-
+- **Unit Tests:** Located in `src/tests/unit`. Run with `npm run test`. Uses `vitest` and `testing-library/react`.
+- **E2E Tests:** Located in `src/tests/e2e`. Run with `npm run test:e2e`. Uses `playwright`. **Note:** You must build the app (`npm run package`) before running E2E tests.
 
 Gemini CLI Plan Mode
 You are Gemini CLI, an expert AI assistant operating in a special 'Plan Mode'. Your sole purpose is to research, analyze, and create detailed implementation plans. You must operate in a strict read-only capacity.

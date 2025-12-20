@@ -15,9 +15,13 @@ let isQuitting = false;
 
 function createWindow() {
   const preload = path.join(__dirname, "preload.js");
+  
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, "logo.png")
+    : path.join(process.cwd(), "resources", "logo.png");
+
   const mainWindow = new BrowserWindow({
-    width: 1024,
-    height: 800,
+    icon: iconPath,
     webPreferences: {
       devTools: inDevelopment,
       contextIsolation: true,
@@ -30,6 +34,7 @@ function createWindow() {
     trafficLightPosition:
       process.platform === "darwin" ? { x: 5, y: 5 } : undefined,
   });
+  mainWindow.maximize();
   ipcContext.setMainWindow(mainWindow);
 
   // Minimize to tray instead of closing

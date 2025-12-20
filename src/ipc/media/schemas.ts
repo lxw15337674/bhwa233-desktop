@@ -55,7 +55,12 @@ export const batchControlSchema = z.object({
   action: z.enum(["pause", "resume", "cancel"]),
 });
 
-export type BatchFileStatus = "pending" | "converting" | "completed" | "failed" | "cancelled";
+export type BatchFileStatus =
+  | "pending"
+  | "converting"
+  | "completed"
+  | "failed"
+  | "cancelled";
 
 export interface BatchProgress {
   fileIndex: number;

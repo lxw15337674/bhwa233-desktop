@@ -47,22 +47,31 @@ export default function DragWindowRegion({ title }: DragWindowRegionProps) {
         </div>
 
         {/* Function Menu Dropdown */}
-        <div className="relative" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+        <div
+          className="relative"
+          style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+        >
           <button
             type="button"
-            className="flex items-center gap-1 rounded-md px-3 py-1.5 text-sm hover:bg-secondary"
+            className="hover:bg-secondary flex items-center gap-1 rounded-md px-3 py-1.5 text-sm"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {t("functions")}
-            <ChevronDown size={14} className={`transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+            <ChevronDown
+              size={14}
+              className={`transition-transform ${menuOpen ? "rotate-180" : ""}`}
+            />
           </button>
           {menuOpen && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
-              <div className="absolute left-0 top-full z-50 mt-1 min-w-[160px] rounded-md border bg-background p-1 shadow-lg">
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setMenuOpen(false)}
+              />
+              <div className="bg-background absolute top-full left-0 z-50 mt-1 min-w-[160px] rounded-md border p-1 shadow-lg">
                 <Link
                   to="/"
-                  className="flex items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-secondary"
+                  className="hover:bg-secondary flex items-center gap-2 rounded-sm px-3 py-2 text-sm"
                   onClick={() => setMenuOpen(false)}
                 >
                   <Video size={16} />

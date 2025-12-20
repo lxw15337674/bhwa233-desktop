@@ -5,9 +5,9 @@ let tray: Tray | null = null;
 
 const getTrayIconPath = (): string => {
   if (app.isPackaged) {
-    return path.join(process.resourcesPath, "tray-icon.png");
+    return path.join(process.resourcesPath, "logo.png");
   }
-  return path.join(process.cwd(), "resources", "tray-icon.png");
+  return path.join(process.cwd(), "resources", "logo.png");
 };
 
 export function createTray(mainWindow: BrowserWindow): Tray {

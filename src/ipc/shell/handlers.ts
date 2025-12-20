@@ -1,5 +1,9 @@
 import { os } from "@orpc/server";
-import { openExternalLinkInputSchema, openFolderInputSchema, showItemInFolderInputSchema } from "./schemas";
+import {
+  openExternalLinkInputSchema,
+  openFolderInputSchema,
+  showItemInFolderInputSchema,
+} from "./schemas";
 import { shell } from "electron";
 
 export const openExternalLink = os

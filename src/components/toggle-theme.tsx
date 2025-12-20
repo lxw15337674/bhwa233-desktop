@@ -22,7 +22,11 @@ export default function ToggleTheme() {
   };
 
   return (
-    <ToggleGroup type="single" value={currentTheme} onValueChange={handleThemeChange}>
+    <ToggleGroup
+      type="single"
+      value={currentTheme}
+      onValueChange={handleThemeChange}
+    >
       <ToggleGroupItem value="light" variant="outline" size="lg">
         <Sun size={16} className="mr-2" />
         {t("lightTheme")}

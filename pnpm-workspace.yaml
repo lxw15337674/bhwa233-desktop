@@ -3,3 +3,5 @@ onlyBuiltDependencies:
   - electron-winstaller
   - esbuild
   - ffmpeg-static
+  - onnxruntime-node
+  - protobufjs
