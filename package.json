@@ -5,6 +5,16 @@
   "description": "Electron Forge with shadcn-ui (Vite + Typescript)",
   "main": ".vite/build/main.js",
   "private": true,
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "electron-winstaller",
+      "esbuild",
+      "ffmpeg-static",
+      "onnxruntime-node",
+      "protobufjs"
+    ]
+  },
   "scripts": {
     "postinstall": "node scripts/copy-ffmpeg.js",
     "start": "electron-forge start",
