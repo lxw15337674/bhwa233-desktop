@@ -1,6 +1,6 @@
 {
   "name": "electron-shadcn",
-  "productName": "electron-shadcn Template",
+  "productName": "bhwa233-tools-desktop",
   "version": "1.2.0",
   "description": "Electron Forge with shadcn-ui (Vite + Typescript)",
   "main": ".vite/build/main.js",
