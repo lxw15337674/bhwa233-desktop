@@ -15,7 +15,10 @@ export const settingsSchema = z.object({
   language: languageSchema,
   clipboardShortcut: z.string().default("CommandOrControl+Shift+V"),
   clipboardWindowBounds: windowBoundsSchema.optional(),
+  clipboardAlwaysOnTop: z.boolean().default(true),
+  mainWindowBounds: windowBoundsSchema.optional(),
   lastRoute: z.string().default("/"),
+  autoLaunch: z.boolean().default(false),
 });
 
 export const updateSettingsInputSchema = z.object({
@@ -23,7 +26,10 @@ export const updateSettingsInputSchema = z.object({
   language: languageSchema.optional(),
   clipboardShortcut: z.string().optional(),
   clipboardWindowBounds: windowBoundsSchema.optional(),
+  clipboardAlwaysOnTop: z.boolean().optional(),
+  mainWindowBounds: windowBoundsSchema.optional(),
   lastRoute: z.string().optional(),
+  autoLaunch: z.boolean().optional(),
 });
 
 export type Settings = z.infer<typeof settingsSchema>;

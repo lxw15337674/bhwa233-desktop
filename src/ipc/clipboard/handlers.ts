@@ -7,6 +7,8 @@ import {
   clipboardRecordSchema,
   getRecordsInputSchema,
   copyRecordInputSchema,
+  togglePinInputSchema,
+  deleteRecordInputSchema,
   type ClipboardRecord,
 } from "./schemas";
 
@@ -30,6 +32,13 @@ export const getRecords = os
   .handler(({ input }) => {
     const { offset, limit, searchTerm } = input;
     let records = store.get("records", []);
+
+    // Sort: pinned records first (by timestamp desc), then unpinned (by timestamp desc)
+    records = records.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return b.timestamp - a.timestamp;
+    });
 
     // Filter by search term (only text records)
     if (searchTerm && searchTerm.trim() !== "") {
@@ -88,6 +97,48 @@ export const clearAllRecords = os.handler(() => {
   return { success: true };
 });
 
+export const togglePin = os
+  .input(togglePinInputSchema)
+  .handler(({ input }) => {
+    const records = store.get("records", []);
+    const record = records.find((r) => r.id === input.id);
+
+    if (!record) {
+      throw new Error("Record not found");
+    }
+
+    record.isPinned = !record.isPinned;
+    store.set("records", records);
+    notifyClipboardUpdate();
+
+    return { success: true, isPinned: record.isPinned };
+  });
+
+export const deleteRecord = os
+  .input(deleteRecordInputSchema)
+  .handler(({ input }) => {
+    const records = store.get("records", []);
+    const recordIndex = records.findIndex((r) => r.id === input.id);
+
+    if (recordIndex === -1) {
+      throw new Error("Record not found");
+    }
+
+    const record = records[recordIndex];
+
+    // Delete image file if it's an image record
+    if (record.type === "image" && fs.existsSync(record.content)) {
+      fs.unlinkSync(record.content);
+    }
+
+    // Remove from array
+    records.splice(recordIndex, 1);
+    store.set("records", records);
+    notifyClipboardUpdate();
+
+    return { success: true };
+  });
+
 // Helper function to add a new record (will be called by clipboard watcher)
 export function addClipboardRecord(
   type: "text" | "image",
@@ -122,6 +173,7 @@ export function addClipboardRecord(
     content,
     timestamp,
     preview,
+    isPinned: false,
   };
 
   // Add to front of array

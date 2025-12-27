@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, Tray, nativeImage } from "electron";
 import path from "path";
+import log from "electron-log";
 
 let tray: Tray | null = null;
 
@@ -11,7 +12,9 @@ const getTrayIconPath = (): string => {
 };
 
 export function createTray(mainWindow: BrowserWindow): Tray {
+  log.info("Creating system tray...");
   const iconPath = getTrayIconPath();
+  log.info("Tray icon path:", iconPath);
   const icon = nativeImage.createFromPath(iconPath);
 
   // Resize for better display on different platforms
@@ -24,6 +27,7 @@ export function createTray(mainWindow: BrowserWindow): Tray {
     {
       label: "Show Window",
       click: () => {
+        log.info("Tray: Show Window clicked");
         mainWindow.show();
         mainWindow.focus();
       },
@@ -34,6 +38,7 @@ export function createTray(mainWindow: BrowserWindow): Tray {
     {
       label: "Quit",
       click: () => {
+        log.info("Tray: Quit clicked");
         app.quit();
       },
     },
@@ -43,15 +48,18 @@ export function createTray(mainWindow: BrowserWindow): Tray {
 
   // Double-click to show window
   tray.on("double-click", () => {
+    log.info("Tray: Double-clicked");
     mainWindow.show();
     mainWindow.focus();
   });
 
+  log.info("✅ System tray created successfully");
   return tray;
 }
 
 export function destroyTray(): void {
   if (tray) {
+    log.info("Destroying system tray");
     tray.destroy();
     tray = null;
   }

@@ -25,6 +25,8 @@ i18n.use(initReactI18next).init({
         shortcutHint: "Restart app to apply changes",
         clipboardHistoryCleared: "Clipboard history cleared",
         copied: "Copied",
+        autoLaunchSetting: "Launch at Startup",
+        autoLaunchDescription: "Automatically start the app when you log in",
         // Batch converter
         batchConverter: "Batch Video Converter",
         batchDescription: "Convert multiple videos at once",
@@ -134,6 +136,8 @@ i18n.use(initReactI18next).init({
         shortcutHint: "重启应用以应用更改",
         clipboardHistoryCleared: "剪切板历史已清空",
         copied: "已复制",
+        autoLaunchSetting: "开机自动启动",
+        autoLaunchDescription: "登录时自动启动应用",
         // Batch converter
         batchConverter: "批量视频转换",
         batchDescription: "一次转换多个视频文件",

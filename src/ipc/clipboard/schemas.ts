@@ -8,6 +8,7 @@ export const clipboardRecordSchema = z.object({
   content: z.string(), // text content or image file path
   timestamp: z.number(),
   preview: z.string(), // preview text (first 100 chars) or empty for images
+  isPinned: z.boolean().default(false), // whether this record is pinned
 });
 
 export const getRecordsInputSchema = z.object({
@@ -20,7 +21,17 @@ export const copyRecordInputSchema = z.object({
   id: z.string(),
 });
 
+export const togglePinInputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteRecordInputSchema = z.object({
+  id: z.string(),
+});
+
 export type ClipboardRecord = z.infer<typeof clipboardRecordSchema>;
 export type ClipboardRecordType = z.infer<typeof clipboardRecordTypeSchema>;
 export type GetRecordsInput = z.infer<typeof getRecordsInputSchema>;
 export type CopyRecordInput = z.infer<typeof copyRecordInputSchema>;
+export type TogglePinInput = z.infer<typeof togglePinInputSchema>;
+export type DeleteRecordInput = z.infer<typeof deleteRecordInputSchema>;

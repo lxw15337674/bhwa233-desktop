@@ -5,6 +5,7 @@ import { window } from "./window";
 import { media } from "./media";
 import { settings } from "./settings";
 import { clipboard } from "./clipboard";
+import { autoLaunch } from "./autoLaunch";
 
 export const router = {
   theme,
@@ -14,4 +15,5 @@ export const router = {
   media,
   settings,
   clipboard,
+  autoLaunch,
 };

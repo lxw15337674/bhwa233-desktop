@@ -27,6 +27,11 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("clipboard-updated", handler);
     return () => ipcRenderer.off("clipboard-updated", handler);
   },
+  onClipboardWindowOpened: (callback: () => void) => {
+    const handler = () => callback();
+    ipcRenderer.on("clipboard-window-opened", handler);
+    return () => ipcRenderer.off("clipboard-window-opened", handler);
+  },
 });
 
 contextBridge.exposeInMainWorld("media", {

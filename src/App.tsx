@@ -44,13 +44,19 @@ export default function App() {
       await syncWithLocalTheme();
       await updateAppLanguage(i18n);
 
-      // Restore last route
+      // Restore last route (skip for clipboard route as it's ephemeral)
       try {
+        const currentPath = window.location.hash.replace("#", "");
+        if (currentPath === "/clipboard") {
+          console.log("Clipboard route detected, skipping route restoration");
+          return;
+        }
+
         const settings = await ipc.client.settings.getSettings();
         const lastRoute = settings.lastRoute || "/";
 
         // Only navigate if not already on that route and it's not /clipboard
-        if (lastRoute !== "/clipboard" && window.location.hash !== `#${lastRoute}`) {
+        if (lastRoute !== "/clipboard" && currentPath !== lastRoute) {
           router.navigate({ to: lastRoute }).catch((err) => {
             console.error("Failed to restore last route:", err);
             // Fallback to home on error

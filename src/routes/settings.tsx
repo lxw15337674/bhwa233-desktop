@@ -5,6 +5,7 @@ import ToggleTheme from "@/components/toggle-theme";
 import { ChevronLeft, Trash2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { ipc } from "@/ipc/manager";
 
@@ -12,6 +13,7 @@ function SettingsPage() {
   const { t } = useTranslation();
   const [shortcut, setShortcut] = useState("CommandOrControl+Shift+V");
   const [isClearing, setIsClearing] = useState(false);
+  const [autoLaunch, setAutoLaunch] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -21,6 +23,7 @@ function SettingsPage() {
     try {
       const settings = await ipc.client.settings.get();
       setShortcut(settings.clipboardShortcut || "CommandOrControl+Shift+V");
+      setAutoLaunch(settings.autoLaunch || false);
     } catch (error) {
       console.error("Failed to load settings:", error);
     }
@@ -55,6 +58,17 @@ function SettingsPage() {
     }
   };
 
+  const handleAutoLaunchChange = async (checked: boolean) => {
+    setAutoLaunch(checked);
+    try {
+      await ipc.client.autoLaunch.setAutoLaunch({ enable: checked });
+    } catch (error) {
+      console.error("Failed to update auto launch setting:", error);
+      // Revert state on error
+      setAutoLaunch(!checked);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col p-6">
       <div className="mb-6 flex items-center gap-4">
@@ -77,6 +91,19 @@ function SettingsPage() {
         <div className="rounded-lg border p-5">
           <h2 className="mb-4 text-lg font-semibold">{t("themeSetting")}</h2>
           <ToggleTheme />
+        </div>
+
+        {/* Auto Launch Setting */}
+        <div className="rounded-lg border p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-1">
+              <h2 className="text-lg font-semibold">{t("autoLaunchSetting")}</h2>
+              <p className="text-sm text-muted-foreground">
+                {t("autoLaunchDescription")}
+              </p>
+            </div>
+            <Switch checked={autoLaunch} onCheckedChange={handleAutoLaunchChange} />
+          </div>
         </div>
 
         {/* Clipboard Shortcut Setting */}

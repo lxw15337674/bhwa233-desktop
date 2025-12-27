@@ -3,6 +3,7 @@ interface Window {
     getFilePath: (file: File) => string;
     onNavigate: (callback: (path: string) => void) => () => void;
     onClipboardUpdate: (callback: () => void) => () => void;
+    onClipboardWindowOpened: (callback: () => void) => () => void;
   };
   media?: {
     onProgress: (callback: (progress: number) => void) => () => void;

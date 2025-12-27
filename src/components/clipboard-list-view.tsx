@@ -2,9 +2,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { ipc } from "@/ipc/manager";
 import type { ClipboardRecord } from "@/ipc/clipboard/schemas";
-import { Image as ImageIcon, FileText } from "lucide-react";
+import { Image as ImageIcon, FileText, Pin, MoreVertical, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface ClipboardListViewProps {
   onCopy?: (id: string) => void;
@@ -62,7 +69,7 @@ export default function ClipboardListView({
   const virtualizer = useVirtualizer({
     count: records.length,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => 80,
+    estimateSize: () => 60, // Reduced from 80 to make it more compact
     overscan: 5,
   });
 
@@ -81,6 +88,26 @@ export default function ClipboardListView({
       }
     } catch (error) {
       console.error("Failed to copy record:", error);
+    }
+  };
+
+  const handleTogglePin = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await ipc.client.clipboard.togglePin({ id });
+      loadRecords(0, true);
+    } catch (error) {
+      console.error("Failed to toggle pin:", error);
+    }
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await ipc.client.clipboard.deleteRecord({ id });
+      loadRecords(0, true);
+    } catch (error) {
+      console.error("Failed to delete record:", error);
     }
   };
 
@@ -168,31 +195,31 @@ export default function ClipboardListView({
                   width: "100%",
                   transform: `translateY(${virtualRow.start}px)`,
                 }}
-                className="cursor-pointer border-b p-3 transition-colors hover:bg-accent"
+                className="group cursor-pointer border-b p-2 transition-colors hover:bg-accent"
                 onClick={() => handleCopy(record.id)}
               >
                 <div className="flex items-start gap-2">
+                  {/* Icon */}
                   {record.type === "image" ? (
                     <ImageIcon
-                      size={16}
-                      className="mt-1 flex-shrink-0 text-muted-foreground"
+                      size={14}
+                      className="mt-0.5 flex-shrink-0 text-muted-foreground"
                     />
                   ) : (
                     <FileText
-                      size={16}
-                      className="mt-1 flex-shrink-0 text-muted-foreground"
+                      size={14}
+                      className="mt-0.5 flex-shrink-0 text-muted-foreground"
                     />
                   )}
+
+                  {/* Content */}
                   <div className="min-w-0 flex-1">
-                    <div className="mb-1 text-xs text-muted-foreground">
-                      {formatTime(record.timestamp)}
-                    </div>
                     {record.type === "text" ? (
-                      <div className="line-clamp-3 break-words text-sm">
+                      <div className="line-clamp-2 break-words text-sm">
                         {record.preview || record.content}
                       </div>
                     ) : (
-                      <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded bg-muted">
+                      <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded bg-muted">
                         <img
                           src={`file://${record.content}`}
                           alt="Clipboard"
@@ -200,6 +227,51 @@ export default function ClipboardListView({
                         />
                       </div>
                     )}
+                  </div>
+
+                  {/* Right side: Time + Actions */}
+                  <div className="flex flex-shrink-0 items-start gap-1">
+                    {/* Time */}
+                    <div className="text-xs text-muted-foreground">
+                      {formatTime(record.timestamp)}
+                    </div>
+
+                    {/* Pin button */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                      onClick={(e) => handleTogglePin(record.id, e)}
+                    >
+                      <Pin
+                        size={14}
+                        className={record.isPinned ? "fill-current" : ""}
+                      />
+                    </Button>
+
+                    {/* Menu */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical size={14} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={(e: any) => handleTogglePin(record.id, e)}>
+                          <Pin size={14} className="mr-2" />
+                          {record.isPinned ? "Unpin" : "Pin"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e: any) => handleDelete(record.id, e)}>
+                          <Trash2 size={14} className="mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
               </div>

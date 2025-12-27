@@ -16,6 +16,8 @@ function getDefaultSettings(): Settings {
     theme: "system",
     language: defaultLanguage,
     clipboardShortcut: "CommandOrControl+Shift+V",
+    lastRoute: "/",
+    autoLaunch: false,
   };
 }
 

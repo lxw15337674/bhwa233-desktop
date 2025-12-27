@@ -8,6 +8,10 @@ class IPCContext {
     this.mainWindow = window;
   }
 
+  public getMainWindow(): BrowserWindow | undefined {
+    return this.mainWindow;
+  }
+
   public get mainWindowContext() {
     if (!this.mainWindow) {
       throw new Error("Main window is not set in IPC context.");

@@ -1,5 +1,5 @@
 import BaseLayout from "@/layouts/base-layout";
-import { Outlet, createRootRoute } from "@tanstack/react-router";
+import { Outlet, createRootRoute, useRouterState } from "@tanstack/react-router";
 /* import { TanStackRouterDevtools } from '@tanstack/react-router-devtools' */
 
 /*
@@ -7,6 +7,20 @@ import { Outlet, createRootRoute } from "@tanstack/react-router";
  */
 
 function Root() {
+  const routerState = useRouterState();
+  const isClipboardRoute = routerState.location.pathname === "/clipboard";
+
+  // Clipboard route: no layout wrapper (compact mode)
+  if (isClipboardRoute) {
+    return (
+      <>
+        <Outlet />
+        {/* <TanStackRouterDevtools /> */}
+      </>
+    );
+  }
+
+  // Other routes: use BaseLayout
   return (
     <BaseLayout>
       <Outlet />

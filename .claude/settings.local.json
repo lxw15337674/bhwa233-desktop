@@ -12,7 +12,10 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(pnpm start)",
       "WebSearch",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(dir /B \"C:\\\\own\\\\code\\\\bhwa233-desktop\\\\src\\\\components\\\\ui\")",
+      "Bash(findstr:*)"
     ]
   }
 }
