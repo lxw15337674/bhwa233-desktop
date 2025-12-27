@@ -15,6 +15,7 @@ function getDefaultSettings(): Settings {
   return {
     theme: "system",
     language: defaultLanguage,
+    clipboardShortcut: "CommandOrControl+Shift+V",
   };
 }
 

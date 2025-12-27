@@ -17,6 +17,16 @@ window.addEventListener("message", (event) => {
 
 contextBridge.exposeInMainWorld("electron", {
   getFilePath: (file: File) => webUtils.getPathForFile(file),
+  onNavigate: (callback: (path: string) => void) => {
+    const handler = (_: IpcRendererEvent, path: string) => callback(path);
+    ipcRenderer.on("navigate-to", handler);
+    return () => ipcRenderer.off("navigate-to", handler);
+  },
+  onClipboardUpdate: (callback: () => void) => {
+    const handler = () => callback();
+    ipcRenderer.on("clipboard-updated", handler);
+    return () => ipcRenderer.off("clipboard-updated", handler);
+  },
 });
 
 contextBridge.exposeInMainWorld("media", {

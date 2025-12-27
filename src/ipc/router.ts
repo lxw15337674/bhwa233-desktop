@@ -4,6 +4,7 @@ import { theme } from "./theme";
 import { window } from "./window";
 import { media } from "./media";
 import { settings } from "./settings";
+import { clipboard } from "./clipboard";
 
 export const router = {
   theme,
@@ -12,4 +13,5 @@ export const router = {
   shell,
   media,
   settings,
+  clipboard,
 };
