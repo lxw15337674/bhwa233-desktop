@@ -15,7 +15,8 @@
       "Bash(test:*)",
       "Bash(pnpm remove:*)",
       "Bash(dir /B \"C:\\\\own\\\\code\\\\bhwa233-desktop\\\\src\\\\components\\\\ui\")",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(pnpm list:*)"
     ]
   }
 }

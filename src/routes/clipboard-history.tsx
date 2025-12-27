@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
-import ClipboardListView from "@/components/clipboard-list-view";
+import ClipboardCompactView from "@/components/clipboard-compact-view";
 import { ChevronLeft } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,7 @@ function ClipboardHistoryPage() {
       </div>
 
       <div className="flex-1 overflow-hidden px-6">
-        <ClipboardListView autoCloseOnCopy={false} />
+        <ClipboardCompactView autoCloseOnCopy={false} />
       </div>
     </div>
   );

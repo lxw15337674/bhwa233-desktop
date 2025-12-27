@@ -1,4 +1,6 @@
 import { clipboard } from "electron";
+import ClipboardWatcher from "electron-clipboard-watcher";
+import crypto from "crypto";
 import {
   addClipboardRecord,
   saveClipboardImage,
@@ -6,12 +8,50 @@ import {
 import log from "electron-log";
 
 let previousText = "";
-let previousImageDataURL = "";
-let watcherInterval: NodeJS.Timeout | null = null;
+let previousImageHash = "";
+let watcher: ClipboardWatcher | null = null;
+
+// Calculate MD5 hash for image data
+function calculateImageHash(imageBuffer: Buffer): string {
+  return crypto.createHash("md5").update(imageBuffer).digest("hex");
+}
+
+// Handle clipboard change event
+function handleClipboardChange() {
+  try {
+    // Check for text
+    const currentText = clipboard.readText();
+    if (currentText && currentText !== previousText) {
+      log.info("New clipboard text detected");
+      previousText = currentText;
+      addClipboardRecord("text", currentText);
+      return; // Prioritize text over image
+    }
+
+    // Check for image
+    const currentImage = clipboard.readImage();
+    if (!currentImage.isEmpty()) {
+      const imageBuffer = currentImage.toPNG();
+      const currentHash = calculateImageHash(imageBuffer);
+
+      if (currentHash !== previousImageHash) {
+        log.info("New clipboard image detected (hash:", currentHash, ")");
+        previousImageHash = currentHash;
+        const imagePath = saveClipboardImage();
+        if (imagePath) {
+          log.info("Clipboard image saved:", imagePath);
+          addClipboardRecord("image", imagePath);
+        }
+      }
+    }
+  } catch (error) {
+    log.error("❌ Clipboard change handler error:", error);
+  }
+}
 
 export function startClipboardWatcher() {
-  log.info("📋 Starting clipboard watcher...");
-  if (watcherInterval) {
+  log.info("📋 Starting clipboard watcher (electron-clipboard-watcher)...");
+  if (watcher) {
     log.info("Clipboard watcher already running");
     return; // Already running
   }
@@ -19,49 +59,30 @@ export function startClipboardWatcher() {
   // Initialize with current clipboard content
   previousText = clipboard.readText();
   log.info("Initial clipboard text:", previousText ? "present" : "empty");
+
   const currentImage = clipboard.readImage();
   if (!currentImage.isEmpty()) {
-    previousImageDataURL = currentImage.toDataURL();
-    log.info("Initial clipboard image: present");
+    const imageBuffer = currentImage.toPNG();
+    previousImageHash = calculateImageHash(imageBuffer);
+    log.info("Initial clipboard image: present (hash:", previousImageHash, ")");
   }
 
-  // Check clipboard every 500ms
-  watcherInterval = setInterval(() => {
-    try {
-      // Check for text
-      const currentText = clipboard.readText();
-      if (currentText && currentText !== previousText) {
-        log.info("New clipboard text detected");
-        previousText = currentText;
-        addClipboardRecord("text", currentText);
-      }
+  // Create watcher instance
+  watcher = new ClipboardWatcher();
 
-      // Check for image
-      const currentImage = clipboard.readImage();
-      if (!currentImage.isEmpty()) {
-        const currentDataURL = currentImage.toDataURL();
-        if (currentDataURL !== previousImageDataURL) {
-          log.info("New clipboard image detected");
-          previousImageDataURL = currentDataURL;
-          const imagePath = saveClipboardImage();
-          if (imagePath) {
-            log.info("Clipboard image saved:", imagePath);
-            addClipboardRecord("image", imagePath);
-          }
-        }
-      }
-    } catch (error) {
-      log.error("❌ Clipboard watcher error:", error);
-    }
-  }, 500);
+  // Listen for clipboard changes
+  watcher.on("change", handleClipboardChange);
+
+  // Start watching
+  watcher.start();
 
   log.info("✅ Clipboard watcher started successfully");
 }
 
 export function stopClipboardWatcher() {
-  if (watcherInterval) {
-    clearInterval(watcherInterval);
-    watcherInterval = null;
+  if (watcher) {
+    watcher.stop();
+    watcher = null;
     log.info("Clipboard watcher stopped");
   }
 }

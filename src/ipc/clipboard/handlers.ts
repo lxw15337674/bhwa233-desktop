@@ -109,7 +109,7 @@ export const togglePin = os
 
     record.isPinned = !record.isPinned;
     store.set("records", records);
-    notifyClipboardUpdate();
+    notifyClipboardUpdate("updated", record);
 
     return { success: true, isPinned: record.isPinned };
   });
@@ -134,7 +134,7 @@ export const deleteRecord = os
     // Remove from array
     records.splice(recordIndex, 1);
     store.set("records", records);
-    notifyClipboardUpdate();
+    notifyClipboardUpdate("deleted", record);
 
     return { success: true };
   });
@@ -159,7 +159,7 @@ export function addClipboardRecord(
     records.splice(duplicateIndex, 1);
     records.unshift(duplicate);
     store.set("records", records);
-    notifyClipboardUpdate();
+    notifyClipboardUpdate("updated", duplicate);
     return;
   }
 
@@ -192,14 +192,17 @@ export function addClipboardRecord(
   }
 
   store.set("records", records);
-  notifyClipboardUpdate();
+  notifyClipboardUpdate("added", newRecord);
 }
 
 // Notify all windows about clipboard update
-function notifyClipboardUpdate(): void {
+function notifyClipboardUpdate(
+  eventType: "added" | "updated" | "deleted",
+  record?: ClipboardRecord
+): void {
   const allWindows = BrowserWindow.getAllWindows();
   allWindows.forEach((win) => {
-    win.webContents.send("clipboard-updated");
+    win.webContents.send("clipboard-updated", { eventType, record });
   });
 }
 

@@ -4,11 +4,18 @@
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string;
 declare const MAIN_WINDOW_VITE_NAME: string;
 
+import type { ClipboardUpdateEvent } from "./preload";
+import type { BatchOverallProgress } from "./ipc/media/schemas";
+
 interface Window {
-  electron: {
+  electron?: {
     getFilePath: (file: File) => string;
+    onNavigate: (callback: (path: string) => void) => () => void;
+    onClipboardUpdate: (callback: (event: ClipboardUpdateEvent) => void) => () => void;
+    onClipboardWindowOpened: (callback: () => void) => () => void;
   };
-  media: {
+  media?: {
     onProgress: (callback: (progress: number) => void) => () => void;
+    onBatchProgress: (callback: (progress: BatchOverallProgress) => void) => () => void;
   };
 }

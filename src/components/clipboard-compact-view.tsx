@@ -1,5 +1,6 @@
 import { Pin, MoreVertical, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,12 +32,21 @@ export default function ClipboardCompactView({
     setSearchTerm,
     isLoading,
     parentRef,
+    selectedItemRef,
+    selectedIndex,
     handleCopy,
     handleTogglePin,
     handleDelete,
     formatTime,
     handleScroll,
+    handleKeyDown,
   } = useClipboardRecords({ autoCloseOnCopy, onCopy });
+
+  // Add keyboard event listener
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -54,88 +64,105 @@ export default function ClipboardCompactView({
       {/* List - optimized with ScrollArea */}
       <ScrollArea className="flex-1">
         <div ref={parentRef} onScroll={handleScroll}>
-          {records.map((record) => (
-            <div
-              key={record.id}
-              className="group cursor-pointer border-b border-border/50 px-3 py-2 transition-colors hover:bg-accent/50"
-              onClick={() => handleCopy(record.id)}
-            >
-              <div className="flex items-start gap-3">
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  {record.type === "text" ? (
-                    <div className="line-clamp-3 break-words text-sm leading-relaxed">
-                      {record.preview || record.content}
+          {records.map((record, index) => {
+            const isSelected = index === selectedIndex;
+            const showShortcut = index < 9;
+
+            return (
+              <div
+                key={record.id}
+                ref={isSelected ? selectedItemRef : undefined}
+                className={`group cursor-pointer border-b border-border/50 px-3 py-2 transition-colors ${
+                  isSelected
+                    ? "bg-primary/10 ring-2 ring-primary ring-inset"
+                    : "hover:bg-accent/50"
+                }`}
+                onClick={() => handleCopy(record.id)}
+              >
+                <div className="flex items-start gap-3">
+                  {/* Keyboard shortcut label */}
+                  {showShortcut && (
+                    <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-muted text-[10px] font-medium text-muted-foreground">
+                      {index + 1}
                     </div>
-                  ) : (
-                    <HoverCard openDelay={200} closeDelay={100}>
-                      <HoverCardTrigger asChild>
-                        <div className="flex h-12 w-12 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded bg-muted">
+                  )}
+
+                  {/* Content */}
+                  <div className="min-w-0 flex-1">
+                    {record.type === "text" ? (
+                      <div className="line-clamp-3 break-words text-sm leading-relaxed">
+                        {record.preview || record.content}
+                      </div>
+                    ) : (
+                      <HoverCard openDelay={200} closeDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <div className="flex h-12 w-12 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded bg-muted">
+                            <img
+                              src={`file://${record.content}`}
+                              alt="Clipboard"
+                              className="h-full w-full object-contain"
+                            />
+                          </div>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-auto max-w-lg p-2" side="right" align="start">
                           <img
                             src={`file://${record.content}`}
-                            alt="Clipboard"
-                            className="h-full w-full object-contain"
+                            alt="Clipboard Preview"
+                            className="max-h-[500px] max-w-full rounded object-contain"
                           />
-                        </div>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-auto max-w-lg p-2" side="right" align="start">
-                        <img
-                          src={`file://${record.content}`}
-                          alt="Clipboard Preview"
-                          className="max-h-[500px] max-w-full rounded object-contain"
-                        />
-                      </HoverCardContent>
-                    </HoverCard>
-                  )}
-                </div>
-
-                {/* Right side: Time + Actions */}
-                <div className="flex flex-shrink-0 items-start gap-1">
-                  {/* Time */}
-                  <div className="text-[11px] leading-none text-muted-foreground">
-                    {formatTime(record.timestamp)}
+                        </HoverCardContent>
+                      </HoverCard>
+                    )}
                   </div>
 
-                  {/* Pin button - fade in on hover */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                    onClick={(e) => handleTogglePin(record.id, e)}
-                  >
-                    <Pin
-                      size={13}
-                      className={record.isPinned ? "fill-current" : ""}
-                    />
-                  </Button>
+                  {/* Right side: Time + Actions */}
+                  <div className="flex flex-shrink-0 items-start gap-1">
+                    {/* Time */}
+                    <div className="text-[11px] leading-none text-muted-foreground">
+                      {formatTime(record.timestamp)}
+                    </div>
 
-                  {/* Menu - fade in on hover */}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreVertical size={13} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={(e: any) => handleTogglePin(record.id, e)}>
-                        <Pin size={13} className="mr-2" />
-                        {record.isPinned ? "Unpin" : "Pin"}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={(e: any) => handleDelete(record.id, e)}>
-                        <Trash2 size={13} className="mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                    {/* Pin button - fade in on hover */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                      onClick={(e) => handleTogglePin(record.id, e)}
+                    >
+                      <Pin
+                        size={13}
+                        className={record.isPinned ? "fill-current" : ""}
+                      />
+                    </Button>
+
+                    {/* Menu - fade in on hover */}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreVertical size={13} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={(e: any) => handleTogglePin(record.id, e)}>
+                          <Pin size={13} className="mr-2" />
+                          {record.isPinned ? "Unpin" : "Pin"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={(e: any) => handleDelete(record.id, e)}>
+                          <Trash2 size={13} className="mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </ScrollArea>
 

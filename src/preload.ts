@@ -6,6 +6,12 @@ import {
 } from "electron";
 import { IPC_CHANNELS } from "./constants";
 import type { BatchOverallProgress } from "./ipc/media/schemas";
+import type { ClipboardRecord } from "./ipc/clipboard/schemas";
+
+export interface ClipboardUpdateEvent {
+  eventType: "added" | "updated" | "deleted";
+  record?: ClipboardRecord;
+}
 
 window.addEventListener("message", (event) => {
   if (event.data === IPC_CHANNELS.START_ORPC_SERVER) {
@@ -22,8 +28,9 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("navigate-to", handler);
     return () => ipcRenderer.off("navigate-to", handler);
   },
-  onClipboardUpdate: (callback: () => void) => {
-    const handler = () => callback();
+  onClipboardUpdate: (callback: (event: ClipboardUpdateEvent) => void) => {
+    const handler = (_: IpcRendererEvent, event: ClipboardUpdateEvent) =>
+      callback(event);
     ipcRenderer.on("clipboard-updated", handler);
     return () => ipcRenderer.off("clipboard-updated", handler);
   },

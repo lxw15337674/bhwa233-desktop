@@ -13,7 +13,7 @@ export const windowBoundsSchema = z.object({
 export const settingsSchema = z.object({
   theme: themeSchema,
   language: languageSchema,
-  clipboardShortcut: z.string().default("CommandOrControl+Shift+V"),
+  clipboardShortcut: z.string().default("Alt+V"),
   clipboardWindowBounds: windowBoundsSchema.optional(),
   clipboardAlwaysOnTop: z.boolean().default(true),
   mainWindowBounds: windowBoundsSchema.optional(),

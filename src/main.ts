@@ -249,75 +249,48 @@ function registerClipboardShortcut() {
   globalShortcut.unregisterAll();
 
   // Get user's preferred shortcut
-  const preferredShortcut = settingsStore.get(
+  const shortcut = settingsStore.get(
     "clipboardShortcut",
-    "CommandOrControl+Shift+V"
+    "Alt+V"
   );
 
-  // Fallback shortcuts if preferred one is taken
-  const fallbackShortcuts = [
-    preferredShortcut,
-    "CommandOrControl+Alt+V",
-    "CommandOrControl+Shift+C",
-    "Alt+Shift+V",
-  ];
+  log.info("Registering shortcut:", shortcut);
 
-  log.info("Preferred shortcut:", preferredShortcut);
+  // Try to register shortcut
+  const success = globalShortcut.register(shortcut, () => {
+    log.info("🔥🔥🔥 CLIPBOARD SHORTCUT TRIGGERED! 🔥🔥🔥");
+    try {
+      // Get main window state before showing clipboard window
+      const mainWindow = ipcContext.getMainWindow();
+      const wasMainWindowVisible = mainWindow?.isVisible();
+      log.info("Main window visible before shortcut:", wasMainWindowVisible);
 
-  let registeredShortcut: string | null = null;
-  let usedFallback = false;
+      // Show clipboard window
+      toggleClipboardWindow();
 
-  // Try to register shortcuts in order
-  for (const shortcut of fallbackShortcuts) {
-    const success = globalShortcut.register(shortcut, () => {
-      log.info("🔥🔥🔥 CLIPBOARD SHORTCUT TRIGGERED! 🔥🔥🔥");
-      try {
-        // Get main window state before showing clipboard window
-        const mainWindow = ipcContext.getMainWindow();
-        const wasMainWindowVisible = mainWindow?.isVisible();
-        log.info("Main window visible before shortcut:", wasMainWindowVisible);
-
-        // Show clipboard window
-        toggleClipboardWindow();
-
-        // Ensure main window stays hidden if it was hidden
-        if (mainWindow && !wasMainWindowVisible) {
-          log.info("Ensuring main window stays hidden");
-          if (mainWindow.isVisible()) {
-            log.warn("Main window was unexpectedly shown, hiding it");
-            mainWindow.hide();
-          }
+      // Ensure main window stays hidden if it was hidden
+      if (mainWindow && !wasMainWindowVisible) {
+        log.info("Ensuring main window stays hidden");
+        if (mainWindow.isVisible()) {
+          log.warn("Main window was unexpectedly shown, hiding it");
+          mainWindow.hide();
         }
-
-        log.info("toggleClipboardWindow() completed");
-      } catch (error) {
-        log.error("❌ Error in toggleClipboardWindow:", error);
       }
-    });
 
-    if (success) {
-      registeredShortcut = shortcut;
-      usedFallback = shortcut !== preferredShortcut;
-      log.info("✅ Global shortcut registered successfully:", shortcut);
-      break;
-    } else {
-      log.warn(`⚠️ Failed to register shortcut: ${shortcut} (already in use)`);
+      log.info("toggleClipboardWindow() completed");
+    } catch (error) {
+      log.error("❌ Error in toggleClipboardWindow:", error);
     }
-  }
+  });
 
-  if (!registeredShortcut) {
-    // All shortcuts failed
-    log.error("❌ Failed to register any clipboard shortcut");
+  if (success) {
+    log.info("✅ Global shortcut registered successfully:", shortcut);
+  } else {
+    log.error("❌ Failed to register clipboard shortcut:", shortcut);
     dialog.showErrorBox(
       "Shortcut Registration Failed",
-      `Failed to register clipboard shortcut. All attempted shortcuts are in use:\n${fallbackShortcuts.join("\n")}\n\nPlease close other applications and restart, or change the shortcut in settings.`
+      `Failed to register clipboard shortcut "${shortcut}".\n\nThe shortcut is already in use by another application.\n\nPlease close other applications and restart, or change the shortcut in settings.`
     );
-  } else if (usedFallback) {
-    // Successfully registered but used fallback
-    log.warn(`⚠️ Using fallback shortcut: ${registeredShortcut}`);
-    // TODO: Show notification to user about fallback shortcut
-    // For now, just log it. In future, add system notification here.
-    log.info(`💡 Your preferred shortcut "${preferredShortcut}" was taken, using "${registeredShortcut}" instead`);
   }
 }
 
