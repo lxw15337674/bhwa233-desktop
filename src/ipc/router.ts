@@ -3,6 +3,7 @@ import { shell } from "./shell";
 import { theme } from "./theme";
 import { window } from "./window";
 import { media } from "./media";
+import { settings } from "./settings";
 
 export const router = {
   theme,
@@ -10,4 +11,5 @@ export const router = {
   app,
   shell,
   media,
+  settings,
 };

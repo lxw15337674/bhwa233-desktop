@@ -71,6 +71,7 @@
     "vitest": "^4.0.15"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.1.2",
     "@icons-pack/react-simple-icons": "^13.8.0",
     "@orpc/client": "^1.12.3",
     "@orpc/server": "^1.12.3",
@@ -86,10 +87,10 @@
     "@tanstack/react-query": "^5.90.12",
     "@tanstack/react-router": "^1.141.2",
     "@tanstack/react-router-devtools": "^1.141.2",
-    "@huggingface/transformers": "^3.1.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^11.0.2",
     "execa": "5.1.1",
     "i18next": "^25.7.2",
     "lucide-react": "^0.559.0",

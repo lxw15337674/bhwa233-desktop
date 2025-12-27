@@ -1,6 +1,6 @@
 import { ThemeMode } from "@/types/theme-mode";
 import { ipc } from "@/ipc/manager";
-import { LOCAL_STORAGE_KEYS } from "@/constants";
+import { getSettings, updateSettings } from "./settings";
 
 export interface ThemePreferences {
   system: ThemeMode;
@@ -9,20 +9,18 @@ export interface ThemePreferences {
 
 export async function getCurrentTheme(): Promise<ThemePreferences> {
   const currentTheme = await ipc.client.theme.getCurrentThemeMode();
-  const localTheme = localStorage.getItem(
-    LOCAL_STORAGE_KEYS.THEME,
-  ) as ThemeMode | null;
+  const settings = await getSettings();
 
   return {
     system: currentTheme,
-    local: localTheme,
+    local: settings.theme,
   };
 }
 
 export async function setTheme(newTheme: ThemeMode) {
   const isDarkMode = newTheme === "dark";
   await ipc.client.theme.setThemeMode(newTheme);
-  localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, newTheme);
+  await updateSettings({ theme: newTheme });
   updateDocumentTheme(isDarkMode);
 }
 
@@ -31,17 +29,12 @@ export async function toggleTheme() {
   const newTheme = isDarkMode ? "dark" : "light";
 
   updateDocumentTheme(isDarkMode);
-  localStorage.setItem(LOCAL_STORAGE_KEYS.THEME, newTheme);
+  await updateSettings({ theme: newTheme });
 }
 
 export async function syncWithLocalTheme() {
-  const { local } = await getCurrentTheme();
-  if (!local) {
-    setTheme("system");
-    return;
-  }
-
-  await setTheme(local);
+  const settings = await getSettings();
+  await setTheme(settings.theme);
 }
 
 function updateDocumentTheme(isDarkMode: boolean) {

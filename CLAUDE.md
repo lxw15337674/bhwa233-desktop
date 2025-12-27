@@ -58,7 +58,7 @@ Route tree is auto-generated in `src/routeTree.gen.ts`.
 
 ### Internationalization
 
-i18next configured in `src/localization/i18n.ts` with inline translations for `en` and `pt-BR`.
+i18next configured in `src/localization/i18n.ts` with inline translations for `en` .
 
 ## Key Patterns
 

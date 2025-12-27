@@ -11,8 +11,10 @@ export default function App() {
   const { i18n } = useTranslation();
 
   useEffect(() => {
-    syncWithLocalTheme();
-    updateAppLanguage(i18n);
+    (async () => {
+      await syncWithLocalTheme();
+      await updateAppLanguage(i18n);
+    })();
   }, [i18n]);
 
   return <RouterProvider router={router} />;

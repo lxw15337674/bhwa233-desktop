@@ -12,6 +12,8 @@ i18n.use(initReactI18next).init({
         settings: "Settings",
         languageSetting: "Language",
         themeSetting: "Theme",
+        lightTheme: "Light",
+        darkTheme: "Dark",
         // Batch converter
         batchConverter: "Batch Video Converter",
         batchDescription: "Convert multiple videos at once",
@@ -108,6 +110,8 @@ i18n.use(initReactI18next).init({
         settings: "设置",
         languageSetting: "语言设置",
         themeSetting: "主题设置",
+        lightTheme: "浅色",
+        darkTheme: "深色",
         // Batch converter
         batchConverter: "批量视频转换",
         batchDescription: "一次转换多个视频文件",

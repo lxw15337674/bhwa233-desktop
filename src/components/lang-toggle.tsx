@@ -7,8 +7,8 @@ export default function LangToggle() {
   const { i18n, t } = useTranslation();
   const currentLang = i18n.language;
 
-  function onValueChange(value: string) {
-    setAppLanguage(value, i18n);
+  async function onValueChange(value: string) {
+    await setAppLanguage(value, i18n);
   }
 
   return (
