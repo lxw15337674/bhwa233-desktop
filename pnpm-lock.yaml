@@ -175,8 +175,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       electron-playwright-helpers:
-        specifier: ^1.8.2
-        version: 1.8.2
+        specifier: ^2.0.1
+        version: 2.0.1
       eslint:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
@@ -2637,8 +2637,8 @@ packages:
     os: [darwin, linux]
     hasBin: true
 
-  electron-playwright-helpers@1.8.2:
-    resolution: {integrity: sha512-sM9fDSEFDOptKDa8oiNphiXdR1KR1uFe8yHnlrnvyQE1ScnHizca/SoYvUdtn+5IuVNTkT8MesKWJ6seS4/zuA==}
+  electron-playwright-helpers@2.0.1:
+    resolution: {integrity: sha512-gnPi63Pyuli4hfRfgIFk6v0PGGQImIRaob9dcBoUaz5B6wFfQklJyqMZY3NzpP6p2/7ZWd7VFI0nMhvGB/biog==}
 
   electron-squirrel-startup@1.0.1:
     resolution: {integrity: sha512-sTfFIHGku+7PsHLJ7v0dRcZNkALrV+YEozINTW8X1nM//e5O3L+rfYuvSW00lmGHnYmUjARZulD8F2V8ISI9RA==}
@@ -7892,7 +7892,7 @@ snapshots:
       - supports-color
     optional: true
 
-  electron-playwright-helpers@1.8.2:
+  electron-playwright-helpers@2.0.1:
     dependencies:
       '@electron/asar': 3.4.1
 
