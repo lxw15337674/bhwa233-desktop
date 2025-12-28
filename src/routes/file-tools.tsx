@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertTriangle,
   FileSearch,
@@ -197,49 +198,51 @@ function FileToolsPage() {
         <h3 className="mb-3 text-lg font-semibold">
           {t("lockingProcesses")} ({lockInfo.processes.length})
         </h3>
-        <div className="space-y-2">
-          {lockInfo.processes.map((proc: ProcessLockInfo) => (
-            <div
-              key={proc.pid}
-              className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
-                selectedProcessIds.has(proc.pid)
-                  ? "border-destructive bg-destructive/10"
-                  : "bg-secondary/30"
-              }`}
-            >
-              <input
-                type="checkbox"
-                checked={selectedProcessIds.has(proc.pid)}
-                onChange={() => toggleProcessSelection(proc.pid)}
-                disabled={!proc.canTerminate || proc.isService}
-                className="h-4 w-4"
-              />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium">{proc.name}</p>
-                  <span className="text-muted-foreground text-xs">
-                    PID: {proc.pid}
-                  </span>
-                  {proc.isService && (
-                    <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs text-blue-600 dark:text-blue-400">
-                      {t("service")}
+        <ScrollArea className="h-[300px]">
+          <div className="space-y-2 pr-4">
+            {lockInfo.processes.map((proc: ProcessLockInfo) => (
+              <div
+                key={proc.pid}
+                className={`flex items-center gap-3 rounded-md border p-3 transition-colors ${
+                  selectedProcessIds.has(proc.pid)
+                    ? "border-destructive bg-destructive/10"
+                    : "bg-secondary/30"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedProcessIds.has(proc.pid)}
+                  onChange={() => toggleProcessSelection(proc.pid)}
+                  disabled={!proc.canTerminate || proc.isService}
+                  className="h-4 w-4"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-medium">{proc.name}</p>
+                    <span className="text-muted-foreground text-xs">
+                      PID: {proc.pid}
                     </span>
+                    {proc.isService && (
+                      <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-xs text-blue-600 dark:text-blue-400">
+                        {t("service")}
+                      </span>
+                    )}
+                  </div>
+                  {proc.path && (
+                    <p className="text-muted-foreground truncate text-xs">
+                      {proc.path}
+                    </p>
+                  )}
+                  {!proc.canTerminate && (
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400">
+                      {t("cannotTerminate")}
+                    </p>
                   )}
                 </div>
-                {proc.path && (
-                  <p className="text-muted-foreground truncate text-xs">
-                    {proc.path}
-                  </p>
-                )}
-                {!proc.canTerminate && (
-                  <p className="text-xs text-yellow-600 dark:text-yellow-400">
-                    {t("cannotTerminate")}
-                  </p>
-                )}
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollArea>
       </div>
     );
   };
@@ -255,27 +258,29 @@ function FileToolsPage() {
     }
 
     return (
-      <div className="max-h-64 space-y-1 overflow-y-auto p-2">
-        {logs.map((log) => (
-          <div
-            key={log.id}
-            className={`flex items-start gap-2 rounded px-2 py-1 text-sm font-mono ${
-              log.level === "error"
-                ? "bg-red-500/10 text-red-600 dark:text-red-400"
-                : log.level === "warning"
-                  ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
-                  : log.level === "success"
-                    ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                    : "text-muted-foreground"
-            }`}
-          >
-            <span className="text-muted-foreground shrink-0 text-xs">
-              {log.timestamp.toLocaleTimeString()}
-            </span>
-            <span className="flex-1">{log.message}</span>
-          </div>
-        ))}
-      </div>
+      <ScrollArea className="h-full">
+        <div className="space-y-1 p-2">
+          {logs.map((log) => (
+            <div
+              key={log.id}
+              className={`flex items-start gap-2 rounded px-2 py-1 text-sm font-mono ${
+                log.level === "error"
+                  ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                  : log.level === "warning"
+                    ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                    : log.level === "success"
+                      ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                      : "text-muted-foreground"
+              }`}
+            >
+              <span className="text-muted-foreground shrink-0 text-xs">
+                {log.timestamp.toLocaleTimeString()}
+              </span>
+              <span className="flex-1">{log.message}</span>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
     );
   };
 
@@ -395,9 +400,9 @@ function FileToolsPage() {
         </div>
 
         {/* Right Panel: Status Log */}
-        <div className="rounded-lg border p-4">
+        <div className="flex flex-col rounded-lg border p-4">
           <h3 className="mb-3 text-lg font-semibold">{t("statusLog")}</h3>
-          <div className="bg-secondary/20 rounded-md border">{renderLogs()}</div>
+          <div className="flex-1 bg-secondary/20 rounded-md border">{renderLogs()}</div>
         </div>
       </div>
 

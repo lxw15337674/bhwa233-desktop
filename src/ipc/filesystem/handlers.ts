@@ -12,6 +12,7 @@ import path from "path";
 import fs from "fs";
 import log from "electron-log";
 import { dialog } from "electron";
+import * as sudo from "@vscode/sudo-prompt";
 
 // Determine script paths (bundled or development)
 function getScriptPath(scriptName: string): string {
@@ -29,6 +30,25 @@ function getScriptPath(scriptName: string): string {
   }
 }
 
+// Helper to check admin status synchronously (for internal use)
+async function checkIsAdmin(): Promise<boolean> {
+  if (process.platform !== "win32") {
+    return false;
+  }
+
+  try {
+    const { stdout } = await execa(
+      'powershell',
+      ['-Command', '"[Security.Principal.WindowsIdentity]::GetCurrent().Owner.IsWellKnown(\'BuiltInAdministratorsSid\')"'],
+      { timeout: 5000 }
+    );
+
+    return stdout.trim().toLowerCase() === "true";
+  } catch (error) {
+    return false;
+  }
+}
+
 // Check if running as administrator (Windows only)
 export const isAdmin = os.handler(async (): Promise<IsAdminOutput> => {
   const platform = process.platform;
@@ -41,17 +61,11 @@ export const isAdmin = os.handler(async (): Promise<IsAdminOutput> => {
   }
 
   try {
-    const { stdout } = await execa(
-      'powershell',
-      ['-Command', '"[Security.Principal.WindowsIdentity]::GetCurrent().Owner.IsWellKnown(\'BuiltInAdministratorsSid\')"'],
-      { timeout: 5000 }
-    );
-
-    const isAdmin = stdout.trim().toLowerCase() === "true";
-    log.info(`Admin check: ${isAdmin}`);
+    const isAdminStatus = await checkIsAdmin();
+    log.info(`Admin check: ${isAdminStatus}`);
 
     return {
-      isAdmin,
+      isAdmin: isAdminStatus,
       platform,
     };
   } catch (error: unknown) {
@@ -169,6 +183,23 @@ export const detectFileLocks = os
     }
   });
 
+// Helper to execute PowerShell with elevated privileges
+function execElevated(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    sudo.exec(
+      command,
+      { name: 'Force Delete File' },
+      (error, stdout, stderr) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(stdout?.toString() || '');
+        }
+      }
+    );
+  });
+}
+
 // Force delete file with optional process termination
 export const forceDeleteFile = os
   .input(forceDeleteFileInputSchema)
@@ -209,17 +240,32 @@ export const forceDeleteFile = os
       log.info(`Using script: ${scriptPath}`);
 
       // Build command arguments
-      const args = ['-ExecutionPolicy', 'Bypass', '-File', scriptPath, '-FilePath', filePath];
+      const args = ['-ExecutionPolicy', 'Bypass', '-File', `"${scriptPath}"`, '-FilePath', `"${filePath}"`];
 
       if (killProcessIds.length > 0) {
         const pidsArg = killProcessIds.join(",");
         args.push('-ProcessIds', pidsArg);
       }
 
-      // Execute PowerShell script
-      const { stdout } = await execa('powershell', args, {
-        timeout: 60000, // 60 second timeout
-      });
+      // Build full PowerShell command
+      const command = `powershell ${args.join(' ')}`;
+
+      // Check if running as admin
+      const isAdminStatus = await checkIsAdmin();
+      let stdout: string;
+
+      if (isAdminStatus) {
+        // Already admin, execute normally
+        log.info("Running as admin, executing directly");
+        const result = await execa('powershell', args.slice(1), {
+          timeout: 60000,
+        });
+        stdout = result.stdout;
+      } else {
+        // Not admin, request elevation
+        log.info("Not running as admin, requesting elevation via UAC");
+        stdout = await execElevated(command);
+      }
 
       // Parse JSON output
       const result = JSON.parse(stdout) as ForceDeleteFileOutput;
