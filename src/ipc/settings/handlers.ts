@@ -1,36 +1,17 @@
 import { os } from "@orpc/server";
-import { app } from "electron";
-import Store from "electron-store";
-import { settingsSchema, updateSettingsInputSchema, type Settings } from "./schemas";
-
-const store = new Store<Settings>({
-  name: "settings",
-  defaults: getDefaultSettings(),
-});
-
-function getDefaultSettings(): Settings {
-  const systemLocale = app.getLocale();
-  const defaultLanguage = systemLocale.startsWith("zh") ? "zh" : "en";
-
-  return {
-    theme: "system",
-    language: defaultLanguage,
-    clipboardShortcut: "CommandOrControl+Shift+V",
-    lastRoute: "/",
-    autoLaunch: false,
-  };
-}
+import { settingsStore } from "@/store";
+import { settingsSchema, updateSettingsInputSchema } from "./schemas";
 
 export const getSettings = os.handler(() => {
-  const settings = store.store;
+  const settings = settingsStore.store;
   return settingsSchema.parse(settings);
 });
 
 export const setSettings = os
   .input(updateSettingsInputSchema)
   .handler(({ input }) => {
-    const currentSettings = store.store;
+    const currentSettings = settingsStore.store;
     const updatedSettings = { ...currentSettings, ...input };
-    store.store = updatedSettings;
+    settingsStore.store = updatedSettings;
     return settingsSchema.parse(updatedSettings);
   });

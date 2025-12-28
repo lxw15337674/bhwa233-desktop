@@ -11,8 +11,8 @@ import { updateElectronApp, UpdateSourceType } from "update-electron-app";
 import { createTray, destroyTray } from "./tray";
 import { startClipboardWatcher, stopClipboardWatcher } from "./clipboardWatcher";
 import { toggleClipboardWindow } from "./clipboardWindowManager";
-import Store from "electron-store";
-import type { Settings, WindowBounds } from "./ipc/settings/schemas";
+import { settingsStore } from "./store";
+import type { WindowBounds } from "./ipc/settings/schemas";
 import log from "electron-log";
 
 // Configure electron-log
@@ -26,7 +26,6 @@ log.info("========================================");
 
 const inDevelopment = process.env.NODE_ENV === "development";
 let isQuitting = false;
-const settingsStore = new Store<Settings>({ name: "settings" });
 let saveWindowBoundsTimeout: NodeJS.Timeout | null = null;
 
 // Get default main window bounds (centered on primary display)
@@ -229,6 +228,12 @@ function setupClipboard() {
 
   // Register global shortcut
   registerClipboardShortcut();
+
+  // Listen for shortcut changes
+  settingsStore.onDidChange("clipboardShortcut", (newShortcut, oldShortcut) => {
+    log.info(`Clipboard shortcut changed from "${oldShortcut}" to "${newShortcut}"`);
+    registerClipboardShortcut();
+  });
 }
 
 function syncAutoLaunchSettings() {
@@ -251,7 +256,7 @@ function registerClipboardShortcut() {
   // Get user's preferred shortcut
   const shortcut = settingsStore.get(
     "clipboardShortcut",
-    "Alt+V"
+    "CommandOrControl+Shift+V"
   );
 
   log.info("Registering shortcut:", shortcut);
