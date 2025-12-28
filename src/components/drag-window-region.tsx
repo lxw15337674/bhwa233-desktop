@@ -1,7 +1,7 @@
 import { getPlatform } from "@/actions/app";
 import { closeWindow, maximizeWindow, minimizeWindow } from "@/actions/window";
 import { type ReactNode, useEffect, useState } from "react";
-import { Settings, ChevronDown, Video, Clock } from "lucide-react";
+import { Settings, ChevronDown, Video, Clock, FileX } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
@@ -84,6 +84,14 @@ export default function DragWindowRegion({ title }: DragWindowRegionProps) {
                 >
                   <Clock size={16} />
                   {t("clipboardHistory")}
+                </Link>
+                <Link
+                  to="/file-tools"
+                  className="hover:bg-secondary flex items-center gap-2 rounded-sm px-3 py-2 text-sm"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <FileX size={16} />
+                  {t("forceDeleteFile")}
                 </Link>
               </div>
             </>
