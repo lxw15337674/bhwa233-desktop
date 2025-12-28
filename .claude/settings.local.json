@@ -19,7 +19,8 @@
       "Bash(find:*)",
       "Bash(powershell -Command \"Get-Command Add-Type | Select-Object -ExpandProperty Source\")",
       "Bash(powershell -ExecutionPolicy Bypass -Command \"Get-Help Restart-Computer -Examples | Out-String -Width 200\")",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(dir:*)"
     ]
   }
 }

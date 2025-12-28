@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SecondRouteImport } from './routes/second'
+import { Route as NetworkToolsRouteImport } from './routes/network-tools'
 import { Route as FileToolsRouteImport } from './routes/file-tools'
 import { Route as ClipboardHistoryRouteImport } from './routes/clipboard-history'
 import { Route as ClipboardRouteImport } from './routes/clipboard'
@@ -24,6 +25,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const SecondRoute = SecondRouteImport.update({
   id: '/second',
   path: '/second',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NetworkToolsRoute = NetworkToolsRouteImport.update({
+  id: '/network-tools',
+  path: '/network-tools',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FileToolsRoute = FileToolsRouteImport.update({
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/clipboard': typeof ClipboardRoute
   '/clipboard-history': typeof ClipboardHistoryRoute
   '/file-tools': typeof FileToolsRoute
+  '/network-tools': typeof NetworkToolsRoute
   '/second': typeof SecondRoute
   '/settings': typeof SettingsRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/clipboard': typeof ClipboardRoute
   '/clipboard-history': typeof ClipboardHistoryRoute
   '/file-tools': typeof FileToolsRoute
+  '/network-tools': typeof NetworkToolsRoute
   '/second': typeof SecondRoute
   '/settings': typeof SettingsRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/clipboard': typeof ClipboardRoute
   '/clipboard-history': typeof ClipboardHistoryRoute
   '/file-tools': typeof FileToolsRoute
+  '/network-tools': typeof NetworkToolsRoute
   '/second': typeof SecondRoute
   '/settings': typeof SettingsRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/clipboard'
     | '/clipboard-history'
     | '/file-tools'
+    | '/network-tools'
     | '/second'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/clipboard'
     | '/clipboard-history'
     | '/file-tools'
+    | '/network-tools'
     | '/second'
     | '/settings'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/clipboard'
     | '/clipboard-history'
     | '/file-tools'
+    | '/network-tools'
     | '/second'
     | '/settings'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   ClipboardRoute: typeof ClipboardRoute
   ClipboardHistoryRoute: typeof ClipboardHistoryRoute
   FileToolsRoute: typeof FileToolsRoute
+  NetworkToolsRoute: typeof NetworkToolsRoute
   SecondRoute: typeof SecondRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -122,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/second'
       fullPath: '/second'
       preLoaderRoute: typeof SecondRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/network-tools': {
+      id: '/network-tools'
+      path: '/network-tools'
+      fullPath: '/network-tools'
+      preLoaderRoute: typeof NetworkToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/file-tools': {
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   ClipboardRoute: ClipboardRoute,
   ClipboardHistoryRoute: ClipboardHistoryRoute,
   FileToolsRoute: FileToolsRoute,
+  NetworkToolsRoute: NetworkToolsRoute,
   SecondRoute: SecondRoute,
   SettingsRoute: SettingsRoute,
 }

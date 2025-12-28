@@ -7,6 +7,7 @@ import { settings } from "./settings";
 import { clipboard } from "./clipboard";
 import { autoLaunch } from "./autoLaunch";
 import { filesystem } from "./filesystem";
+import { network } from "./network";
 
 export const router = {
   theme,
@@ -18,4 +19,5 @@ export const router = {
   clipboard,
   autoLaunch,
   filesystem,
+  network,
 };

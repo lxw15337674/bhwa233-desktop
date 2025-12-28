@@ -14,6 +14,7 @@ const config: ForgeConfig = {
       process.platform === "win32" ? "resources/ffmpeg.exe" : "resources/ffmpeg",
       process.platform === "win32" ? "resources/ffprobe.exe" : "resources/ffprobe",
       "src/ipc/filesystem/scripts",
+      "src/ipc/network/scripts",
     ],
   },
   rebuildConfig: {},
